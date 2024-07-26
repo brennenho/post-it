@@ -1,5 +1,5 @@
 from unittest import mock
-from tidy.files import FileClient, GSFileClient, S3FileClient
+from postit.files import FileClient, GSFileClient, S3FileClient
 
 def test_get_for_target():
     assert isinstance(FileClient.get_for_target("gs://bucket/file"), GSFileClient)

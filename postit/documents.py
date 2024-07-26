@@ -1,6 +1,6 @@
 import json
 
-from tidy.files import FileClient
+from postit.files import FileClient
 
 # TODO: split each folder into multiple files after a certain size
 def generate_documents(folder_paths: list[str], output_path: str = "./documents", keep_raw: bool = True) -> None:

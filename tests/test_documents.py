@@ -1,4 +1,4 @@
-from tidy.documents import generate_documents, get_top_folder
+from postit.documents import generate_documents, get_top_folder
 from unittest.mock import patch
 
 def test_get_top_folder():
@@ -13,7 +13,7 @@ def test_get_top_folder():
     assert get_top_folder("root/**/subfolder/**") == "root/subfolder"
     assert get_top_folder("root/**/subfolder/**/[a-z].gz") == "root/subfolder"
 
-@patch("tidy.documents.FileClient")
+@patch("postit.documents.FileClient")
 def test_generate_documents(mock_file_client):
     mock_file_client.get_for_target.return_value.glob.return_value = ["file1", "file2"]
     mock_file_client.get_for_target.return_value.read.side_effect = ["content1", "content2"]

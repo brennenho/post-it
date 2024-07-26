@@ -4,12 +4,17 @@ build-backend = "setuptools.build_meta"
 
 
 [project]
-name = "tidy"
+name = "postit"
 version = "0.0.1"
-dependencies = [
-    "requests",
-    'importlib-metadata; python_version<"3.10"',
+description = "A flexible Python data tagging framework for pre-training of AI models."
+readme = "README.md"
+authors = [
+  { name="Brennen Ho", email="post-it@brennen.dev" },
 ]
+
+[project.urls]
+Homepage = "https://github.com/brennenho/post-it"
+Issues = "https://github.com/brennenho/post-it/issues"
 
 [tool.setuptools.dynamic]
 dependencies = { file = ["requirements.txt"] }
