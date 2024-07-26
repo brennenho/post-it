@@ -18,3 +18,10 @@ Issues = "https://github.com/brennenho/post-it/issues"
 
 [tool.setuptools.dynamic]
 dependencies = { file = ["requirements.txt"] }
+
+[tool.ruff.lint]
+extend-select = ["I"]
+
+[tool.ruff.lint.isort]
+lines-between-types = 1
+no-sections = true
