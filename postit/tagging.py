@@ -11,6 +11,7 @@ class BaseTagger(ABC, Generic[T]):
 
     This class defines the common interface and behavior for taggers.
     DocTagger and FileTagger classes are inherited from this class.
+    NOTE: Do not inherit from this class directly. Inherit from DocTagger or FileTagger instead.
 
     Attributes:
         name (str): The name of the tagger.
