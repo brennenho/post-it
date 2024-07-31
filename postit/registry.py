@@ -7,6 +7,15 @@ from postit.files import FileClient
 class TaggerRegistry:
     """
     A singleton registry to store taggers and allow for loading of custom taggers.
+    Register custom taggers by deriving from DocTagger or FileTagger and using the @tagger decorator.
+
+    Example:
+        .. code-block:: python
+
+            @tagger
+            class CustomTagger(DocTagger) -> TagResult:
+                def predict(self, doc):
+                    return TagResult(doc, [])
     """
 
     _instance = None

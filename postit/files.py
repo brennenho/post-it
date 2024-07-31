@@ -87,6 +87,19 @@ class FileClient:
         """
         return glob.glob(path, recursive=True)
 
+    @staticmethod
+    def is_glob(path: str) -> bool:
+        """
+        Checks if the given path is a glob pattern.
+
+        Args:
+            path (str): The path to check.
+
+        Returns:
+            bool: True if the path is a glob pattern, False otherwise.
+        """
+        return any(char in path for char in ["*", "?", "[", "]"])
+
 
 class GSFileClient(FileClient):
     """
