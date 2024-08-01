@@ -4,6 +4,9 @@ import operator
 from postit.files import FileClient
 from typing import Union
 
+# TODO: improve error handling
+# TODO: improve logging and progress tracking
+
 
 class Condition:
     """
@@ -41,7 +44,7 @@ class MixerConfig:
     """
 
     name: str
-    tags: list[str]
+    experiments: list[str]
     input_paths: list[str]
     output_path: str
     conditions: dict[str, list[Condition]]
@@ -49,7 +52,7 @@ class MixerConfig:
     def __init__(
         self,
         name: str,
-        tags: list[str],
+        experiments: list[str],
         input_paths: list[str],
         output_path: str = "",
         conditions: dict[str, list[Condition]] = {
@@ -58,7 +61,7 @@ class MixerConfig:
         },
     ):
         self.name = name
-        self.tags = tags
+        self.experiments = experiments
         self.input_paths = input_paths
         self.output_path = output_path
         self.conditions = conditions
@@ -66,7 +69,7 @@ class MixerConfig:
 
 class Mixer:
     """
-    Responsible for mixing documents and filtering spans based on the provided configuration.
+    Responsible for mixing documents and filtering tags based on the provided configuration.
 
     Args:
         config (MixerConfig): The configuration object containing the input paths, tags, conditions, and output path.
@@ -99,10 +102,10 @@ class Mixer:
                 out_file = ""
                 tags = []
 
-                for tag in self.config.tags:
+                for exp in self.config.experiments:
                     # Assume tags are in an adjacent directory
                     # TODO: make this more flexible
-                    tag_path = path.replace("documents", f"tags/{tag}")
+                    tag_path = path.replace("documents", f"tags/{exp}")
                     tags.append(file_client.read(tag_path).strip().split("\n"))
 
                 # TODO: implement filtering by file tags
@@ -177,14 +180,14 @@ class Mixer:
 
         def eval_condition(doc: dict, condition: Condition) -> list:
             """
-            Evaluate the given condition on the document and return a list of valid spans.
+            Evaluate the given condition on the document and return a list of valid tags.
 
             Args:
                 doc (dict): The document to evaluate the condition on.
                 condition (Condition): The condition to evaluate.
 
             Returns:
-                list: A list of valid spans that satisfy the condition.
+                list: A list of valid tags that satisfy the condition.
             """
             operators = {
                 "in": lambda x, y: x in y,
@@ -199,15 +202,15 @@ class Mixer:
             if condition.operator not in operators:
                 raise ValueError(f"Invalid operator: {condition.operator}")
 
-            valid_spans = []
+            valid_tags = []
             for tag in doc.get(condition.tag, []):
                 if operators[condition.operator](tag[2], condition.value):
-                    valid_spans.append(tag)
+                    valid_tags.append(tag)
 
-            return valid_spans
+            return valid_tags
 
-        include_conditions = conditions.get("include")
-        exclude_conditions = conditions.get("exclude")
+        include_conditions = conditions.get("include", [])
+        exclude_conditions = conditions.get("exclude", [])
 
         include_results = [
             eval_condition(doc, condition) for condition in include_conditions

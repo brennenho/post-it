@@ -59,7 +59,8 @@ def test_file_from_raw():
 
 
 def test_float_tag():
-    tag = FloatTag(0, 10, 0.5)
+    tag = FloatTag("name", 0, 10, 0.5)
+    assert tag.name == "name"
     assert tag.start == 0
     assert tag.end == 10
     assert tag.value == 0.5
@@ -69,7 +70,8 @@ def test_float_tag():
 
 
 def test_str_tag():
-    tag = StrTag(0, 10, "test")
+    tag = StrTag("name", 0, 10, "test")
+    assert tag.name == "name"
     assert tag.start == 0
     assert tag.end == 10
     assert tag.value == "test"
@@ -80,8 +82,8 @@ def test_str_tag():
 
 def test_tag_result():
     doc = Doc(1, "source1", "content1")
-    tag1 = FloatTag(0, 10, 0.5)
-    tag2 = StrTag(11, 20, "test")
+    tag1 = FloatTag("tag1", 0, 10, 0.5)
+    tag2 = StrTag("tag2", 11, 20, "test")
     tag_result = TagResult(doc, [tag1, tag2])
     assert tag_result.source == doc
     assert tag_result.tags == [tag1, tag2]

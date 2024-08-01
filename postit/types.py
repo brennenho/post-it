@@ -110,13 +110,15 @@ class Tag(ABC):
     Abstract base class for tags.
 
     Attributes:
+        name (str): The name of the tag.
         start (int): The starting position of the tag.
         end (int): The ending position of the tag
     """
 
-    __slots__ = "start", "end"
+    __slots__ = "name", "start", "end"
 
-    def __init__(self, start: int, end: int):
+    def __init__(self, name: str, start: int, end: int):
+        self.name = name
         self.start = start
         self.end = end
 
@@ -142,13 +144,14 @@ class FloatTag(Tag):
 
     __slots__ = "_value"
 
-    def __init__(self, start: int, end: int, value: float):
-        super().__init__(start, end)
+    def __init__(self, name: str, start: int, end: int, value: float):
+        super().__init__(name, start, end)
         self._value = value
 
     @property
     def value(self) -> float:
-        return self._value
+        # Values are rounded to 4 decimal places
+        return round(self._value, 4)
 
     @value.setter
     def value(self, value: float):
@@ -165,8 +168,8 @@ class StrTag(Tag):
 
     __slots__ = "_value"
 
-    def __init__(self, start: int, end: int, value: str):
-        super().__init__(start, end)
+    def __init__(self, name: str, start: int, end: int, value: str):
+        super().__init__(name, start, end)
         self.value = value
 
     @property

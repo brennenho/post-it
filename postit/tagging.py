@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from collections import defaultdict
 from postit.types import Doc, File, Source, TagResult
 from typing import Generic, TypeVar
 
@@ -40,33 +41,39 @@ class BaseTagger(ABC, Generic[T]):
         """
         raise NotImplementedError
 
-    def output(self, source_tags: TagResult) -> list:
+    def output(self, source_tags: TagResult, exp: str) -> dict:
         """
-        Converts the given source_tags into a list of lists containing the start index, end index, and value of each tag.
+        Converts the tagged results into a dictionary format.
 
         Args:
             source_tags (TagResult): The source_tags to be converted.
+            exp (str): The experiment name.
 
         Returns:
-            list: A list of lists, where each inner list contains the start index, end index, and value of a tag.
+            dict: A dictionary of the tagged results.
+                Keys are in the format: `[experiment name]_[tagger name]_[tag name]`.
+                Values are in the format: `[start, end, value]` for each tag.
         """
-        output = []
+        tags = defaultdict(list)
         for tag in source_tags.tags:
-            output.append([tag.start, tag.end, tag.value])
-        return output
+            tags[f"{exp}__{self.name}__{tag.name}"].append(
+                [tag.start, tag.end, tag.value]
+            )
 
-    def run_tagger(self, source: T) -> tuple[str, list]:
+        return tags
+
+    def run_tagger(self, source: T, exp: str) -> dict:
         """
-        Runs the tagger on the given source and returns a tuple containing the name of the tagger and the tagged source.
+        Runs a tagger on the given source and returns the results in a dict.
 
         Args:
-            source (T): The source to be tagged.
+            source (T): The source to be tagged. Should be a Doc or File object.
 
         Returns:
-            tuple[str, list]: A tuple containing the name of the tagger and the tagged source.
+            dict: A dictonary of the tagged results.
         """
         source_tags = self.tag(source)
-        return (self.name, self.output(source_tags))
+        return self.output(source_tags, exp)
 
 
 class DocTagger(BaseTagger):
