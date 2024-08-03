@@ -1,0 +1,79 @@
+name: checks
+on:
+  workflow_call:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v4
+
+      - name: setup python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+        
+      - name: install dev tools
+        run: pip install -v --no-cache -r requirements.dev.txt
+      
+      - name: run ruff
+        run: ruff format --check
+  
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v4
+
+      - name: setup python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+        
+      - name: install dev tools
+        run: pip install -v --no-cache -r requirements.dev.txt
+      
+      - name: run ruff
+        run: ruff check
+
+      - name: run mypy
+        run: mypy .
+  
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v4
+
+      - name: setup python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+        
+      - name: install dev tools
+        run: |
+          pip install -v --no-cache -r requirements.dev.txt
+          pip install -v --no-cache -r requirements.txt
+
+      - name: run pytest
+        run: pytest
