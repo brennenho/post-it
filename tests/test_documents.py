@@ -28,6 +28,6 @@ def test_generate_documents(mock_file_client):
     mock_file_client.get_for_target.assert_called_with("output")
     mock_file_client.get_for_target.return_value.write.assert_called_with(
         "output/root.jsonl",
-        '{"idx": 0, "source": "file1", "content": "content1"}\n{"idx": 1, "source": "file2", "content": "content2"}\n',
+        '{"id": 0, "source": "file1", "content": "content1"}\n{"id": 1, "source": "file2", "content": "content2"}\n',
     )
     mock_file_client.get_for_target.return_value.remove.assert_called_with("root")

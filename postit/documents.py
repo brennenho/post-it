@@ -33,10 +33,10 @@ def generate_documents(
         # Initialize a new FileClient for each folder to allow mixing local and remote paths
         file_client = FileClient.get_for_target(folder_paths[folder_index])
 
-        for idx, file in enumerate(folder):
+        for id, file in enumerate(folder):
             content = file_client.read(file)
             # Format document data in jsonl format
-            file_data = {"idx": idx, "source": file, "content": content}
+            file_data = {"id": id, "source": file, "content": content}
             folder_content += json.dumps(file_data) + "\n"
 
         # Get the top folder path to use as file name
@@ -73,9 +73,9 @@ def get_top_folder(path: str) -> str:
 
         # Check if the segment contains any special characters
         contains_special_chars = False
-        for idx, char in enumerate(segment):
+        for i, char in enumerate(segment):
             if char in special_chars:
-                if idx > 0 and segment[idx - 1] == "/":
+                if i > 0 and segment[i - 1] == "/":
                     continue
                 else:
                     contains_special_chars = True

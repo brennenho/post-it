@@ -5,7 +5,7 @@ from postit.types import Doc, File, FloatTag, StrTag, TagResult
 
 def test_doc_initialization():
     doc = Doc(1, "source1", "content1")
-    assert doc.idx == 1
+    assert doc.id == 1
     assert doc.source == "source1"
     assert doc.content == "content1"
     assert doc.tags == {}
@@ -13,7 +13,7 @@ def test_doc_initialization():
 
 def test_doc_get_tags():
     doc = Doc(1, "source1", "content1")
-    expected_tags = json.dumps({"idx": 1, "source": "source1", "tags": {}})
+    expected_tags = json.dumps({"id": 1, "source": "source1", "tags": {}})
     assert doc.get_tags() == expected_tags
 
 
@@ -43,17 +43,17 @@ def test_file_get_tags():
 
 def test_file_from_raw():
     raw_data = (
-        json.dumps({"idx": 1, "source": "source1", "content": "content1"})
+        json.dumps({"id": 1, "source": "source1", "content": "content1"})
         + "\n"
-        + json.dumps({"idx": 2, "source": "source2", "content": "content2"})
+        + json.dumps({"id": 2, "source": "source2", "content": "content2"})
     )
     file = File.from_raw("source_file", raw_data)
     assert file.source == "source_file"
     assert len(file.content) == 2
-    assert file.content[0].idx == 1
+    assert file.content[0].id == 1
     assert file.content[0].source == "source1"
     assert file.content[0].content == "content1"
-    assert file.content[1].idx == 2
+    assert file.content[1].id == 2
     assert file.content[1].source == "source2"
     assert file.content[1].content == "content2"
 

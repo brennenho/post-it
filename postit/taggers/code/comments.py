@@ -24,7 +24,7 @@ class CodeComments(DocTagger):
                     return super().tag(doc)
     """
 
-    name: str = "code_comments"
+    name = "code_comments"
     single_line_symbols: list[str] = ["#", "//"]
     multi_line_symbols: list[tuple[str, str]] = [("/*", "*/"), ("<!--", "-->")]
 
@@ -63,5 +63,25 @@ class CodeComments(DocTagger):
         tags: list[Tag] = []
         for start, end in comments:
             tags.append(FloatTag("comments", start, end, 1))
+
+        return TagResult(doc, tags)
+
+
+@tagger
+class CodeLicenses(DocTagger):
+    name = "code_licenses"
+    dependencies = ["code_comments"]
+
+    def tag(self, doc: Doc) -> TagResult:
+        license_pattern = re.compile(
+            r"\b(copyright|license|licensed|all rights reserved)", re.IGNORECASE
+        )
+
+        comments = self.imports.get("code_comments/comments", {}).get(doc.id, [])
+        tags: list[Tag] = []
+
+        for start, end, _ in comments:
+            if license_pattern.search(doc.content[start:end]):
+                tags.append(FloatTag("notice", start, end, 1))
 
         return TagResult(doc, tags)

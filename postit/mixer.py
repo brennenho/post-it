@@ -2,6 +2,7 @@ import json
 import operator
 
 from postit.files import FileClient
+from postit.utils import get_documents_path
 from typing import Union
 
 # TODO: improve error handling
@@ -127,28 +128,27 @@ class Mixer:
             if file_client.is_glob(input_path):
                 paths = file_client.glob(input_path)
 
+            out_file = ""
             for path in paths:
                 in_file = file_client.read(path).strip().split("\n")
-                out_file = ""
                 tags = []
 
                 for exp in self.config.experiments:
                     # Assume tags are in an adjacent directory
                     # TODO: make this more flexible
                     tag_path = path.replace("documents", f"tags/{exp}")
-                    tags.append(file_client.read(tag_path).strip().split("\n"))
+                    tags.append(file_client.read(tag_path).strip().splitlines())
 
                 # TODO: implement filtering by file tags
                 file_tags = {}
                 for tag in tags:
                     file_tags.update(json.loads(tag[0])["tags"])
-                out_file += json.dumps({"file_tags": file_tags}) + "\n"
 
                 for i in range(len(in_file)):
                     doc: dict = json.loads(in_file[i])
                     # Merge tags into document content
                     doc_tags = self.merge_tags(
-                        doc["idx"],
+                        doc["id"],
                         [tag[i + 1] for tag in tags],  # Skip first line (file tags)
                     )
                     if doc_tags:
@@ -161,20 +161,21 @@ class Mixer:
                     if filtered_doc["content"]:
                         out_file += json.dumps(filtered_doc) + "\n"
 
-                if not self.config.output_path:
-                    # Default output path is an adjacent directory with the mixer name
-                    self.config.output_path = path.replace(
-                        "documents", self.config.name
-                    )
+            if not self.config.output_path:
+                # Default output path is an adjacent directory with the mixer name
+                mixer_directory = get_documents_path(input_path).replace(
+                    "documents", self.config.name
+                )
+                self.config.output_path = f"{mixer_directory}/results.jsonl"
 
-                file_client.write(self.config.output_path, out_file)
+            file_client.write(self.config.output_path, out_file)
 
-    def merge_tags(self, doc_idx: str, raw_tags: list[str]) -> dict:
+    def merge_tags(self, doc_id: str, raw_tags: list[str]) -> dict:
         """
         Merges tags from a list of raw tags based on the document index.
 
         Args:
-            doc_idx (str): The index of the document.
+            doc_id (str): The id of the document.
             raw_tags (list[str]): A list of raw tags in JSON format.
 
         Returns:
@@ -184,7 +185,7 @@ class Mixer:
         tags = {}
         for tag in raw_tags:
             tag_json = json.loads(tag)
-            if doc_idx == tag_json["idx"]:  # Check document indexes match
+            if doc_id == tag_json["id"]:  # Check document ids match
                 tags.update(tag_json["tags"])
 
         return tags

@@ -30,15 +30,15 @@ class Doc(Source):
     Represents a document.
 
     Attributes:
-        idx (int): The index of the document.
+        id (int): The id of the document.
         content (str): The content of the document.
     """
 
-    __slots__ = "idx", "content"
+    __slots__ = "id", "content"
 
-    def __init__(self, idx: int, source: str, content: str):
+    def __init__(self, id: int, source: str, content: str):
         super().__init__(source)
-        self.idx = idx
+        self.id = id
         self.content = content
 
     def get_tags(self) -> str:
@@ -50,7 +50,7 @@ class Doc(Source):
         """
         return json.dumps(
             {
-                "idx": self.idx,
+                "id": self.id,
                 "source": self.source,
                 "tags": self.tags,
             }
@@ -101,7 +101,7 @@ class File(Source):
         content = []
         for line in raw.strip().splitlines():
             data = json.loads(line)
-            content.append(Doc(data["idx"], data["source"], data["content"]))
+            content.append(Doc(data["id"], data["source"], data["content"]))
         return File(path, content)
 
 
