@@ -9,6 +9,8 @@ class DocLength(DocTagger):
     Calculates the number of words/characters in a document.
     """
 
+    name = "doc_length"
+
     def tag(self, doc: Doc) -> TagResult:
         tags: list[Tag] = []
         tags.append(
@@ -33,6 +35,8 @@ class ParagraphLength(DocTagger):
     Calculates the number of words/characters in each paragraph of a document.
     """
 
+    name = "paragraph_length"
+
     def tag(self, doc: Doc) -> TagResult:
         tags: list[Tag] = []
         start = 0
@@ -56,6 +60,8 @@ class DocLines(DocTagger):
     Calculates the number of lines in a document.
     """
 
+    name = "doc_lines"
+
     def tag(self, doc: Doc) -> TagResult:
         tags: list[Tag] = []
         lines = doc.content.split("\n")
@@ -76,6 +82,8 @@ class NumDocs(FileTagger):
     """
     Calculates the number of documents in a file.
     """
+
+    name = "num_docs"
 
     def tag(self, file: File) -> TagResult:
         tags: list[Tag] = []

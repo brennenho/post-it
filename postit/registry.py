@@ -14,6 +14,7 @@ class TaggerRegistry:
 
             @tagger
             class CustomTagger(DocTagger) -> TagResult:
+                name = "custom_tagger"
                 def predict(self, doc):
                     return TagResult(doc, [])
     """
@@ -27,12 +28,9 @@ class TaggerRegistry:
         return cls._instance
 
     @classmethod
-    def add(cls, name=None):
+    def add(cls):
         """
         Decorator to add a tagger function to the registry.
-
-        Args:
-            name (str, optional): The name of the tagger. If not provided, the function name will be used.
 
         Returns:
             The decorated function.
@@ -40,8 +38,11 @@ class TaggerRegistry:
         cls()  # Ensure the registry is initialized
 
         def decorator(func):
-            nonlocal name
-            if name is None:
+            name = ""
+            # Use the name attribute if it exists, otherwise use the function name
+            if hasattr(func, "name"):
+                name = func.name
+            else:
                 name = func.__name__
             cls._instance._registry[name] = func
             return func
@@ -111,10 +112,11 @@ def tagger(cls):
     A utility decorator function that adds the decorated class to the TaggerRegistry.
     Use @tagger on a class derived from DocTagger or FileTagger to add it to the registry.
 
-    Taggers are added to the registry using the class name as the tagger name.
+    Taggers are added to the registry using the `name` attribute of the class if it exists.
+    Will default to the class name if the `name` attribute is not present.
     """
     return TaggerRegistry.add()(cls)
 
 
 # Import default taggers
-TaggerRegistry.import_modules(["postit/taggers/*.py"])
+TaggerRegistry.import_modules(["postit/taggers/**/*.py"])

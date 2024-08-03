@@ -23,9 +23,7 @@ class BaseTagger(ABC, Generic[T]):
         run_tagger(source: T) -> tuple[str, list]: Runs the tagger on the given source and returns the name and output.
     """
 
-    @property
-    def name(self) -> str:
-        return self.__class__.__name__
+    name: str
 
     @abstractmethod
     def tag(self, source: T) -> TagResult:
@@ -55,10 +53,11 @@ class BaseTagger(ABC, Generic[T]):
                 Values are in the format: `[start, end, value]` for each tag.
         """
         tags = defaultdict(list)
-        for tag in source_tags.tags:
-            tags[f"{exp}__{self.name}__{tag.name}"].append(
-                [tag.start, tag.end, tag.value]
-            )
+        if source_tags:
+            for tag in source_tags.tags:
+                tags[f"{exp}/{self.name}/{tag.name}"].append(
+                    [tag.start, tag.end, tag.value]
+                )
 
         return tags
 
