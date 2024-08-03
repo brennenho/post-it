@@ -53,9 +53,9 @@ jobs:
   publish:
     name: publish
     runs-on: ubuntu-latest
-    environment: release
-    timeout-minutes: 10
     needs: build
+    timeout-minutes: 10
+    environment: release
     permissions:
       id-token: write
 
@@ -67,7 +67,4 @@ jobs:
           path: dist/
         
       - name: publish to pypi
-        uses: pypa/gh-action-pypi-publish@v1.5.0
-        with:
-          user: __token__
-          password: ${{ secrets.PYPI_KEY }}
+        uses: pypa/gh-action-pypi-publish@release/v1
