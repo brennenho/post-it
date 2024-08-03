@@ -30,6 +30,36 @@ class Condition:
         self.operator = operator
         self.value = value
 
+    def eval(self, doc: dict) -> list:
+        """
+        Evaluate the given condition on the document and return a list of valid tags.
+
+        Args:
+            doc (dict): The document to evaluate the condition on.
+
+        Returns:
+            list: A list of valid tags that satisfy the condition.
+        """
+        operators = {
+            "in": lambda x, y: x in y,
+            "not in": lambda x, y: x not in y,
+            "==": operator.eq,
+            "!=": operator.ne,
+            ">": operator.gt,
+            "<": operator.lt,
+            ">=": operator.ge,
+            "<=": operator.le,
+        }
+        if self.operator not in operators:
+            raise ValueError(f"Invalid operator: {self.operator}")
+
+        valid_tags = []
+        for tag in doc.get(self.tag, []):
+            if operators[self.operator](tag[2], self.value):
+                valid_tags.append(tag)
+
+        return valid_tags
+
 
 class MixerConfig:
     """
@@ -115,7 +145,7 @@ class Mixer:
                 out_file += json.dumps({"file_tags": file_tags}) + "\n"
 
                 for i in range(len(in_file)):
-                    doc = json.loads(in_file[i])
+                    doc: dict = json.loads(in_file[i])
                     # Merge tags into document content
                     doc_tags = self.merge_tags(
                         doc["idx"],
@@ -178,46 +208,11 @@ class Mixer:
         if not conditions:
             return doc
 
-        def eval_condition(doc: dict, condition: Condition) -> list:
-            """
-            Evaluate the given condition on the document and return a list of valid tags.
-
-            Args:
-                doc (dict): The document to evaluate the condition on.
-                condition (Condition): The condition to evaluate.
-
-            Returns:
-                list: A list of valid tags that satisfy the condition.
-            """
-            operators = {
-                "in": lambda x, y: x in y,
-                "not in": lambda x, y: x not in y,
-                "==": operator.eq,
-                "!=": operator.ne,
-                ">": operator.gt,
-                "<": operator.lt,
-                ">=": operator.ge,
-                "<=": operator.le,
-            }
-            if condition.operator not in operators:
-                raise ValueError(f"Invalid operator: {condition.operator}")
-
-            valid_tags = []
-            for tag in doc.get(condition.tag, []):
-                if operators[condition.operator](tag[2], condition.value):
-                    valid_tags.append(tag)
-
-            return valid_tags
-
         include_conditions = conditions.get("include", [])
         exclude_conditions = conditions.get("exclude", [])
 
-        include_results = [
-            eval_condition(doc, condition) for condition in include_conditions
-        ]
-        exclude_results = [
-            eval_condition(doc, condition) for condition in exclude_conditions
-        ]
+        include_results = [condition.eval(doc) for condition in include_conditions]
+        exclude_results = [condition.eval(doc) for condition in exclude_conditions]
 
         # Merge include and exclude results
         merge = self.merge_ranges(include_results, exclude_results)

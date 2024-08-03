@@ -2,7 +2,7 @@ import re
 
 from postit.registry import tagger
 from postit.tagging import DocTagger, TagResult
-from postit.types import Doc, FloatTag
+from postit.types import Doc, FloatTag, Tag
 
 
 @tagger
@@ -24,9 +24,9 @@ class CodeComments(DocTagger):
                     return super().tag(doc)
     """
 
-    name = "code_comments"
-    single_line_symbols = ["#", "//"]
-    multi_line_symbols = [("/*", "*/"), ("<!--", "-->")]
+    name: str = "code_comments"
+    single_line_symbols: list[str] = ["#", "//"]
+    multi_line_symbols: list[tuple[str, str]] = [("/*", "*/"), ("<!--", "-->")]
 
     def tag(self, doc: Doc) -> TagResult:
         escaped_single = [re.escape(symbol) for symbol in self.single_line_symbols]
@@ -60,7 +60,7 @@ class CodeComments(DocTagger):
                 comment_end = match.end(match.lastindex)
                 comments.append((comment_start, comment_end))
 
-        tags = []
+        tags: list[Tag] = []
         for start, end in comments:
             tags.append(FloatTag("comments", start, end, 1))
 
