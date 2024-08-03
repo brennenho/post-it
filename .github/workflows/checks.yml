@@ -33,9 +33,11 @@ jobs:
         run: pip install -v --no-cache -r requirements.dev.txt
       
       - name: run ruff
-        run: ruff format --check
+        run: |
+          ruff format --check
+          ruff check
   
-  check:
+  types:
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -48,19 +50,18 @@ jobs:
         with:
           python-version: 3.12
         
-      - name: install dev tools
-        run: pip install -v --no-cache -r requirements.dev.txt
-      
-      - name: run ruff
-        run: ruff check
+      - name: install dependencies
+        run: |
+          pip install -v --no-cache -r requirements.dev.txt
+          pip install -v --no-cache -r requirements.txt
 
       - name: run mypy
         run: mypy .
   
-  test:
+  tests:
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    
+
     steps:
       - name: checkout code
         uses: actions/checkout@v4
