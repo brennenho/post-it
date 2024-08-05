@@ -81,7 +81,14 @@ class TaggerRegistry:
         return cls._instance._registry
 
     @classmethod
-    def import_modules(cls, file_paths: list[str]):
+    def names(cls):
+        """
+        Get a list of all available tagger names.
+        """
+        return list(cls._instance._registry.keys())
+
+    @staticmethod
+    def import_modules(file_paths: list[str]):
         """
         Import tagger modules from the specified file paths.
 

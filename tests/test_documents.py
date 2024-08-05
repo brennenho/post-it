@@ -1,4 +1,4 @@
-from postit.documents import generate_documents, get_top_folder
+from postit.documents import DocumentGenerator, get_top_folder
 from unittest.mock import patch
 
 
@@ -16,14 +16,14 @@ def test_get_top_folder():
 
 
 @patch("postit.documents.FileClient")
-def test_generate_documents(mock_file_client):
+def test_documents_generator(mock_file_client):
     mock_file_client.get_for_target.return_value.glob.return_value = ["file1", "file2"]
     mock_file_client.get_for_target.return_value.read.side_effect = [
         "content1",
         "content2",
     ]
 
-    generate_documents(["root"], "output", keep_raw=False)
+    DocumentGenerator.generate(["root"], "output", keep_raw=False)
 
     mock_file_client.get_for_target.assert_called_with("output")
     mock_file_client.get_for_target.return_value.write.assert_called_with(

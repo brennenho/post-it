@@ -87,6 +87,18 @@ class FileClient:
         """
         return glob.glob(path, recursive=True)
 
+    def is_file(self, path: str) -> bool:
+        """
+        Checks if the given path is a file.
+
+        Args:
+            path (str): The path to check.
+
+        Returns:
+            bool: True if the path is a file, False otherwise.
+        """
+        return os.path.isfile(path)
+
     @staticmethod
     def is_glob(path: str) -> bool:
         """
@@ -153,6 +165,18 @@ class GSFileClient(FileClient):
         """
         paths = self.gcs.glob(path)
         return [f"gs://{path}" for path in paths]
+
+    def is_file(self, path: str) -> bool:
+        """
+        Checks if the given path is a file in Google Cloud Storage.
+
+        Args:
+            path (str): The path to check.
+
+        Returns:
+            bool: True if the path is a file, False otherwise.
+        """
+        return self.gcs.isfile(path)
 
 
 class S3FileClient(FileClient):
