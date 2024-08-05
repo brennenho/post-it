@@ -5,7 +5,7 @@ from collections import defaultdict
 from postit.types import Doc, File, Source, TagResult
 from typing import Any, Generic, TypeVar
 
-T = TypeVar("T", bound="Source")
+T = TypeVar("T", bound=Source)
 
 
 class BaseTagger(ABC, Generic[T]):
@@ -104,7 +104,7 @@ class BaseTagger(ABC, Generic[T]):
                 )
 
 
-class DocTagger(BaseTagger):
+class DocTagger(BaseTagger[Doc]):
     """
     A base class for document taggers.
 
@@ -113,11 +113,11 @@ class DocTagger(BaseTagger):
     """
 
     @abstractmethod
-    def tag(self, doc: Doc, **kwargs: Any) -> TagResult:
+    def tag(self, source: Doc, **kwargs: Any) -> TagResult:
         raise NotImplementedError
 
 
-class FileTagger(BaseTagger):
+class FileTagger(BaseTagger[File]):
     """
     A base class for file taggers.
 
@@ -126,5 +126,5 @@ class FileTagger(BaseTagger):
     """
 
     @abstractmethod
-    def tag(self, file: File, **kwargs: Any) -> TagResult:
+    def tag(self, source: File, **kwargs: Any) -> TagResult:
         raise NotImplementedError

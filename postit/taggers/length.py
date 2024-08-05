@@ -11,22 +11,25 @@ class DocLength(DocTagger):
 
     name = "doc_length"
 
-    def tag(self, doc: Doc) -> TagResult:
+    def tag(self, source: Doc, **kwargs) -> TagResult:
         tags: list[Tag] = []
         tags.append(
             FloatTag(
-                name="num_chars", start=0, end=len(doc.content), value=len(doc.content)
+                name="num_chars",
+                start=0,
+                end=len(source.content),
+                value=len(source.content),
             )
         )
         tags.append(
             FloatTag(
                 name="num_words",
                 start=0,
-                end=len(doc.content),
-                value=len(doc.content.split()),
+                end=len(source.content),
+                value=len(source.content.split()),
             )
         )
-        return TagResult(doc, tags)
+        return TagResult(source, tags)
 
 
 @tagger
@@ -37,10 +40,10 @@ class ParagraphLength(DocTagger):
 
     name = "paragraph_length"
 
-    def tag(self, doc: Doc) -> TagResult:
+    def tag(self, source: Doc, **kwargs) -> TagResult:
         tags: list[Tag] = []
         start = 0
-        for paragraph in doc.content.split("\n"):
+        for paragraph in source.content.split("\n"):
             end = start + len(paragraph)
             tags.append(
                 FloatTag(name="num_chars", start=start, end=end, value=len(paragraph))
@@ -51,7 +54,7 @@ class ParagraphLength(DocTagger):
                 )
             )
             start = end + 1
-        return TagResult(doc, tags)
+        return TagResult(source, tags)
 
 
 @tagger
@@ -62,19 +65,24 @@ class DocLines(DocTagger):
 
     name = "doc_lines"
 
-    def tag(self, doc: Doc) -> TagResult:
+    def tag(self, source: Doc, **kwargs) -> TagResult:
         tags: list[Tag] = []
-        lines = doc.content.split("\n")
-        tags.append(FloatTag("num_lines", 0, len(doc.content), len(lines)))
+        lines = source.content.split("\n")
+        tags.append(FloatTag("num_lines", 0, len(source.content), len(lines)))
         tags.append(
             FloatTag(
-                "avg_chars_per_line", 0, len(doc.content), len(doc.content) / len(lines)
+                "avg_chars_per_line",
+                0,
+                len(source.content),
+                len(source.content) / len(lines),
             )
         )
         tags.append(
-            FloatTag("max_lines", 0, len(doc.content), max(len(line) for line in lines))
+            FloatTag(
+                "max_lines", 0, len(source.content), max(len(line) for line in lines)
+            )
         )
-        return TagResult(doc, tags)
+        return TagResult(source, tags)
 
 
 @tagger
@@ -85,14 +93,14 @@ class NumDocs(FileTagger):
 
     name = "num_docs"
 
-    def tag(self, file: File) -> TagResult:
+    def tag(self, source: File, **kwargs) -> TagResult:
         tags: list[Tag] = []
         tags.append(
             FloatTag(
                 name="total_docs",
                 start=0,
-                end=len(file.content),
-                value=len(file.content),
+                end=len(source.content),
+                value=len(source.content),
             )
         )
-        return TagResult(file, tags)
+        return TagResult(source, tags)

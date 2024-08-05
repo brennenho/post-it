@@ -28,7 +28,7 @@ class CodeComments(DocTagger):
     single_line_symbols: list[str] = ["#", "//"]
     multi_line_symbols: list[tuple[str, str]] = [("/*", "*/"), ("<!--", "-->")]
 
-    def tag(self, doc: Doc) -> TagResult:
+    def tag(self, source: Doc, **kwargs) -> TagResult:
         escaped_single = [re.escape(symbol) for symbol in self.single_line_symbols]
         escaped_multi = [
             (re.escape(start), re.escape(end)) for start, end in self.multi_line_symbols
@@ -53,7 +53,7 @@ class CodeComments(DocTagger):
 
         comments = []
         for match in re.finditer(
-            comment_pattern, doc.content, re.MULTILINE | re.DOTALL
+            comment_pattern, source.content, re.MULTILINE | re.DOTALL
         ):
             if match.lastindex:
                 comment_start = match.start(match.lastindex)
@@ -64,7 +64,7 @@ class CodeComments(DocTagger):
         for start, end in comments:
             tags.append(FloatTag("comments", start, end, 1))
 
-        return TagResult(doc, tags)
+        return TagResult(source, tags)
 
 
 @tagger
@@ -72,16 +72,16 @@ class CodeLicenses(DocTagger):
     name = "code_licenses"
     dependencies = ["code_comments"]
 
-    def tag(self, doc: Doc) -> TagResult:
+    def tag(self, source: Doc, **kwargs) -> TagResult:
         license_pattern = re.compile(
             r"\b(copyright|license|licensed|all rights reserved)", re.IGNORECASE
         )
 
-        comments = self.imports.get("code_comments/comments", {}).get(doc.id, [])
+        comments = self.imports.get("code_comments/comments", {}).get(source.id, [])
         tags: list[Tag] = []
 
         for start, end, _ in comments:
-            if license_pattern.search(doc.content[start:end]):
+            if license_pattern.search(source.content[start:end]):
                 tags.append(FloatTag("notice", start, end, 1))
 
-        return TagResult(doc, tags)
+        return TagResult(source, tags)
