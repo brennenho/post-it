@@ -3,7 +3,7 @@ import operator
 
 from postit.files import FileClient
 from postit.processor import BaseProcessor
-from postit.utils import get_documents_path
+from postit.utils.paths import get_documents_path
 from typing import Union
 
 # TODO: improve error handling

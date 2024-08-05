@@ -2,10 +2,10 @@ import concurrent.futures
 
 from concurrent.futures import ThreadPoolExecutor
 from postit.files import FileClient
-from postit.logging import get_logger
 from postit.registry import TaggerRegistry
 from postit.tagging import DocTagger, FileTagger
 from postit.types import File
+from postit.utils.logging import get_logger
 from rich.progress import (
     BarColumn,
     MofNCompleteColumn,
@@ -14,14 +14,13 @@ from rich.progress import (
     TaskProgressColumn,
     TextColumn,
 )
+from typing import Any
 
 # IN PROGRESS
 # TODO: implement as a class
 # TODO: implement parallel processing
 # TODO: improve error handling
 # TODO: improve logging and progress tracking
-
-logger = get_logger(__name__)
 
 
 class BaseProcessor:
@@ -38,7 +37,7 @@ class BaseProcessor:
 
     label: str = "Processing"
 
-    def __init__(self, num_processes: int = 1):
+    def __init__(self, num_processes: int = 1, logger=None):
         self.num_processes = num_processes
         self.progress = Progress(
             TextColumn("[progress.description]{task.description}"),
@@ -47,6 +46,7 @@ class BaseProcessor:
             TaskProgressColumn(),
             MofNCompleteColumn(),
         )
+        self.logger = logger or get_logger(__name__)
 
     def process(self, *args, **kwargs):
         """
@@ -63,7 +63,7 @@ class BaseProcessor:
         """
         Runs the processing on multiple paths in parallel using ThreadPoolExecutor.
         """
-        logger.info(
+        self.logger.info(
             f"{self.label} {len(paths)} files using {self.num_processes} processes."
         )
         with self.progress:
@@ -104,6 +104,7 @@ class TaggerProcessor(BaseProcessor):
         experiment: str,
         imported_experiments: list[str] = [],
         num_processes: int = 1,
+        **kwargs: Any,
     ):
         """
         Tag documents using taggers.
@@ -124,6 +125,7 @@ class TaggerProcessor(BaseProcessor):
                 file_client=file_client,
                 imported_experiments=imported_experiments,
                 num_processes=num_processes,
+                **kwargs,
             )
             processor.run(document_paths)
 
@@ -134,11 +136,14 @@ class TaggerProcessor(BaseProcessor):
         file_client: FileClient,
         imported_experiments: list[str] = [],
         num_processes: int = 1,
+        **kwargs: Any,
     ):
         super().__init__(num_processes)
         self.experiment = experiment
         self.file_client = file_client
         self.imported_experiments = imported_experiments
+        self.kwargs = kwargs
+
         self.doc_taggers: list[DocTagger] = []
         self.file_taggers: list[FileTagger] = []
         taggers = [TaggerRegistry.get(tagger)() for tagger in tagger_names]
@@ -171,14 +176,14 @@ class TaggerProcessor(BaseProcessor):
             )
 
         for file_tagger in self.file_taggers:
-            tagger_result = file_tagger.run_tagger(file, self.experiment)
+            tagger_result = file_tagger.run_tagger(file)
             file.tags.update(tagger_result)
 
         for doc_tagger in self.doc_taggers:
             if doc_tagger.dependencies:
                 doc_tagger.import_tags(imported_tags)
             for doc_index, doc in enumerate(file.content):
-                tagger_result = doc_tagger.run_tagger(doc, self.experiment)
+                tagger_result = doc_tagger.run_tagger(doc, **self.kwargs)
                 doc.tags.update(tagger_result)
                 file.content[doc_index] = doc
 
