@@ -109,8 +109,8 @@ class FileClient:
         Returns:
             int: The number of files in the list of paths.
         """
-        path = self.glob(path)
-        return sum([1 for p in path if self.is_file(p)])
+        paths = self.glob(path)
+        return sum([1 for p in paths if self.is_file(p)])
 
     @staticmethod
     def is_glob(path: str) -> bool:
@@ -202,8 +202,8 @@ class GSFileClient(FileClient):
             int: The number of files in the list of paths.
         """
 
-        path = self.glob(path)
-        return sum([1 for p in path if self.is_file(p)])
+        paths = self.glob(path)
+        return sum([1 for p in paths if self.is_file(p)])
 
 
 class S3FileClient(FileClient):
