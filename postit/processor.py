@@ -13,7 +13,9 @@ from rich.progress import (
     SpinnerColumn,
     TaskProgressColumn,
     TextColumn,
+    TimeElapsedColumn,
 )
+from rich.table import Column
 from typing import Any
 
 # IN PROGRESS
@@ -36,15 +38,24 @@ class BaseProcessor:
     """
 
     label: str = "Processing"
+    units: str = "files"
 
     def __init__(self, num_processes: int = 1, logger=None):
         self.num_processes = num_processes
         self.progress = Progress(
-            TextColumn("[progress.description]{task.description}"),
-            SpinnerColumn(),
+            TextColumn(
+                "[progress.description]{task.description}",
+                table_column=Column(width=22),
+            ),
+            SpinnerColumn(table_column=Column(width=1)),
             BarColumn(),
-            TaskProgressColumn(),
-            MofNCompleteColumn(),
+            TaskProgressColumn(table_column=Column(width=5)),
+            TextColumn("|", table_column=Column(width=1)),
+            MofNCompleteColumn(table_column=Column(width=15)),
+            TextColumn(f"[green]{self.units}", table_column=Column(width=5)),
+            TextColumn("|", table_column=Column(width=1)),
+            TimeElapsedColumn(table_column=Column(width=8)),
+            TextColumn("[yellow]elapsed", table_column=Column(width=6)),
         )
         self.logger = logger or get_logger(__name__)
 
@@ -54,27 +65,19 @@ class BaseProcessor:
         """
         raise NotImplementedError
 
-    def process_with_progress(self, *args, **kwargs):
-        result = self.process(*args, **kwargs)
-        self.progress.update(self.task, advance=1)
-        return result
-
-    def run(self, paths: list[str]):
+    def run(self, paths: list[str], **kwargs: Any):
         """
         Runs the processing on multiple paths in parallel using ThreadPoolExecutor.
         """
-        self.logger.info(
-            f"{self.label} {len(paths)} files using {self.num_processes} processes."
-        )
         with self.progress:
-            self.task = self.progress.add_task(
-                f"[yellow]{self.label}", total=len(paths)
+            self.task = self.progress.add_task(f"[yellow]{self.label}", total=None)
+            total = self.get_total(paths, **kwargs)
+            self.progress.update(self.task, total=total)
+            self.logger.info(
+                f"Processing {total} {self.units} using {self.num_processes} processes."
             )
             with ThreadPoolExecutor(max_workers=self.num_processes) as executor:
-                futures = {
-                    executor.submit(self.process_with_progress, path): path
-                    for path in paths
-                }
+                futures = {executor.submit(self.process, path): path for path in paths}
 
                 results = []
                 for future in concurrent.futures.as_completed(futures):
@@ -86,6 +89,13 @@ class BaseProcessor:
                 )
                 return results
 
+    def get_total(self, paths: list[str], **kwargs: Any) -> int:
+        """
+        Returns the total number of files to process.
+        This method should be overridden by subclasses, depending on total number of steps required.
+        """
+        return len(paths)
+
 
 class TaggerProcessor(BaseProcessor):
     """
@@ -96,6 +106,7 @@ class TaggerProcessor(BaseProcessor):
     """
 
     label = "Tagging"
+    units = "tags"
 
     @staticmethod
     def tag(
@@ -116,6 +127,7 @@ class TaggerProcessor(BaseProcessor):
             imported_experiments (list[str], optional): List of imported experiment names. Defaults to [].
             num_processes (int, optional): Number of processes to use for parallel processing. Defaults to 1.
         """
+        TaggerProcessor.label = f"Tagging ({experiment})"
         for glob_path in glob_paths:
             file_client = FileClient.get_for_target(glob_path)
             document_paths = file_client.glob(glob_path)
@@ -127,7 +139,7 @@ class TaggerProcessor(BaseProcessor):
                 num_processes=num_processes,
                 **kwargs,
             )
-            processor.run(document_paths)
+            processor.run(document_paths, num_taggers=len(tagger_names))
 
     def __init__(
         self,
@@ -178,15 +190,29 @@ class TaggerProcessor(BaseProcessor):
         for file_tagger in self.file_taggers:
             tagger_result = file_tagger.run_tagger(file)
             file.tags.update(tagger_result)
+            self.progress.update(self.task, advance=1)
 
         for doc_tagger in self.doc_taggers:
             if doc_tagger.dependencies:
                 doc_tagger.import_tags(imported_tags)
+
             for doc_index, doc in enumerate(file.content):
                 tagger_result = doc_tagger.run_tagger(doc, **self.kwargs)
                 doc.tags.update(tagger_result)
                 file.content[doc_index] = doc
+                self.progress.update(self.task, advance=1)
 
         output_path = path.replace("documents", f"tags/{self.experiment}")
 
         self.file_client.write(output_path, file.get_tags())
+
+    def get_total(self, paths: list[str], **kwargs) -> int:
+        """
+        Returns the total number of tags to process.
+        """
+        total = 0
+        for path in paths:
+            file_client = FileClient.get_for_target(path)
+            total += len(file_client.read(path).splitlines())
+        num_taggers = kwargs.get("num_taggers", 1)
+        return total * num_taggers

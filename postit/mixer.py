@@ -104,6 +104,7 @@ class Mixer(BaseProcessor):
 
     @staticmethod
     def mix(config: MixerConfig, num_processes: int = 1) -> None:
+        Mixer.label = f"Mixing ({config.name})"
         for input_path in config.input_paths:
             paths = [input_path]
             file_client = FileClient.get_for_target(input_path)
@@ -112,7 +113,7 @@ class Mixer(BaseProcessor):
             processor = Mixer(
                 file_client, config.experiments, config.conditions, num_processes
             )
-            out_file = "".join(processor.run(paths))
+            out_file = "".join(processor.run(paths, file_client=file_client))
 
             if not config.output_path:
                 # Default output path is an adjacent directory with the mixer name
@@ -168,7 +169,16 @@ class Mixer(BaseProcessor):
             if filtered_doc["content"]:
                 out_file += json.dumps(filtered_doc) + "\n"
 
+            self.progress.update(self.task, advance=1)
+
         return out_file
+
+    def get_total(self, paths: list[str], **kwargs) -> int:
+        """
+        Returns the total number of documents to process.
+        """
+        file_client: FileClient = kwargs.get("file_client", None)
+        return sum([len(file_client.read(path).splitlines()) for path in paths])
 
     def merge_tags(self, doc_id: str, raw_tags: list[str]) -> dict:
         """

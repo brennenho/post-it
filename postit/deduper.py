@@ -41,6 +41,7 @@ class Deduper(TaggerProcessor):
             bloom_file (str, optional): Path to a bloom filter file to import.
             num_processes (int, optional): Number of processes to use for parallel processing. Defaults to 1.
         """
+        Deduper.label = f"Deduping ({experiment})"
         tagger_names = []
         if dedupe_docs:
             tagger_names.append("doc_dedupe")
@@ -49,7 +50,7 @@ class Deduper(TaggerProcessor):
 
         bloom = None
         if bloom_file:
-            if get_ext(bloom_file) != "pkl":
+            if get_ext(bloom_file) != ".pkl":
                 raise ValueError("Bloom filter file must be a pickle file. (.pkl)")
             file_client = FileClient.get_for_target(bloom_file)
             if file_client.is_file(bloom_file):
@@ -74,7 +75,18 @@ class Deduper(TaggerProcessor):
                 bloom=bloom,
                 **kwargs,
             )
-            processor.run(document_paths)
+            processor.run(
+                document_paths, file_client=file_client, num_taggers=len(tagger_names)
+            )
 
         if bloom_file:
             bloom.save(bloom_file)
+
+    def get_total(self, paths: list[str], **kwargs) -> int:
+        """
+        Returns total number of steps for deduplication.
+        """
+        file_client: FileClient = kwargs.get("file_client", None)
+        num_taggers = kwargs.get("num_taggers", 1)
+        total = sum([len(file_client.read(path).splitlines()) for path in paths])
+        return total * num_taggers

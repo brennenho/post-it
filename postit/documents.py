@@ -59,6 +59,7 @@ class DocumentGenerator(BaseProcessor):
                 # Format document data in jsonl format
                 file_data = {"id": id, "source": file, "content": content}
                 folder_content += json.dumps(file_data) + "\n"
+                self.progress.update(self.task, advance=1)
 
         # Get the top folder path to use as file name
         top_folder_path = get_top_folder(path)
@@ -71,6 +72,16 @@ class DocumentGenerator(BaseProcessor):
         FileClient.get_for_target(self.output_path).write(
             f"{self.output_path}/{top_folder_path.split('/')[-1]}.jsonl", folder_content
         )
+
+    def get_total(self, paths: list[str], **kwargs) -> int:
+        """
+        Returns the total number of documents to process.
+        """
+        total = 0
+        for path in paths:
+            file_client = FileClient.get_for_target(path)
+            total += file_client.get_file_count(path)
+        return total
 
 
 def get_top_folder(path: str) -> str:
