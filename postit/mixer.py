@@ -2,7 +2,8 @@ import json
 import operator
 
 from postit.files import FileClient
-from postit.utils import get_documents_path
+from postit.processor import BaseProcessor
+from postit.utils.paths import get_documents_path
 from typing import Union
 
 # TODO: improve error handling
@@ -98,77 +99,86 @@ class MixerConfig:
         self.conditions = conditions
 
 
-class Mixer:
-    """
-    Responsible for mixing documents and filtering tags based on the provided configuration.
+class Mixer(BaseProcessor):
+    label = "Mixing"
 
-    Args:
-        config (MixerConfig): The configuration object containing the input paths, tags, conditions, and output path.
-
-    Invoke with Mixer(mixer_config).mix() to run the mixer.
-    """
-
-    def __init__(self, config: MixerConfig):
-        self.config = config
-
-    def mix(self) -> None:
-        """
-        Mixes the input files based on the specified configuration.
-        Expects structured documents in a "documents" folder and tags in a "tags" folder.
-
-        This method reads the input files, applies filtering and merging operations,
-        and writes the output file based on the specified configuration.
-
-        Returns:
-            None
-        """
-        for input_path in self.config.input_paths:
+    @staticmethod
+    def mix(config: MixerConfig, num_processes: int = 1) -> None:
+        Mixer.label = f"Mixing ({config.name})"
+        for input_path in config.input_paths:
             paths = [input_path]
             file_client = FileClient.get_for_target(input_path)
             if file_client.is_glob(input_path):
                 paths = file_client.glob(input_path)
+            processor = Mixer(
+                file_client, config.experiments, config.conditions, num_processes
+            )
+            out_file = "".join(processor.run(paths, file_client=file_client))
 
-            out_file = ""
-            for path in paths:
-                in_file = file_client.read(path).strip().split("\n")
-                tags = []
-
-                for exp in self.config.experiments:
-                    # Assume tags are in an adjacent directory
-                    # TODO: make this more flexible
-                    tag_path = path.replace("documents", f"tags/{exp}")
-                    tags.append(file_client.read(tag_path).strip().splitlines())
-
-                # TODO: implement filtering by file tags
-                file_tags = {}
-                for tag in tags:
-                    file_tags.update(json.loads(tag[0])["tags"])
-
-                for i in range(len(in_file)):
-                    doc: dict = json.loads(in_file[i])
-                    # Merge tags into document content
-                    doc_tags = self.merge_tags(
-                        doc["id"],
-                        [tag[i + 1] for tag in tags],  # Skip first line (file tags)
-                    )
-                    if doc_tags:
-                        doc.update(doc_tags)
-
-                    # Apply filtering to document content
-                    filtered_doc = self.apply_conditions(doc, self.config.conditions)
-
-                    # Remove empty documents
-                    if filtered_doc["content"]:
-                        out_file += json.dumps(filtered_doc) + "\n"
-
-            if not self.config.output_path:
+            if not config.output_path:
                 # Default output path is an adjacent directory with the mixer name
                 mixer_directory = get_documents_path(input_path).replace(
-                    "documents", self.config.name
+                    "documents", config.name
                 )
-                self.config.output_path = f"{mixer_directory}/results.jsonl"
+                config.output_path = f"{mixer_directory}/results.jsonl"
 
-            file_client.write(self.config.output_path, out_file)
+            file_client.write(config.output_path, out_file)
+
+    def __init__(
+        self,
+        file_client: FileClient,
+        experiments: list[str],
+        conditions: dict[str, list[Condition]],
+        num_processes: int = 1,
+    ):
+        super().__init__(num_processes)
+        self.file_client = file_client
+        self.experiments = experiments
+        self.conditions = conditions
+
+    def process(self, path: str) -> str:
+        in_file = self.file_client.read(path).strip().split("\n")
+        tags = []
+        out_file = ""
+
+        for exp in self.experiments:
+            # Assume tags are in an adjacent directory
+            # TODO: make this more flexible
+            tag_path = path.replace("documents", f"tags/{exp}")
+            tags.append(self.file_client.read(tag_path).strip().splitlines())
+
+        # TODO: implement filtering by file tags
+        file_tags = {}
+        for tag in tags:
+            file_tags.update(json.loads(tag[0])["tags"])
+
+        for i in range(len(in_file)):
+            doc: dict = json.loads(in_file[i])
+            # Merge tags into document content
+            doc_tags = self.merge_tags(
+                doc["id"],
+                [tag[i + 1] for tag in tags],  # Skip first line (file tags)
+            )
+            if doc_tags:
+                doc.update(doc_tags)
+
+            # Apply filtering to document content
+            filtered_doc = self.apply_conditions(doc, self.conditions)
+
+            # Remove empty documents
+            if filtered_doc["content"]:
+                out_file += json.dumps(filtered_doc) + "\n"
+
+            self.progress.update(self.task, advance=1)
+
+        return out_file
+
+    def get_total(self, paths: list[str], **kwargs) -> int:
+        """
+        Returns the total number of documents to process.
+        """
+        file_client: FileClient = kwargs.get("file_client", None)
+        return sum([len(file_client.read(path).splitlines()) for path in paths])
 
     def merge_tags(self, doc_id: str, raw_tags: list[str]) -> dict:
         """
@@ -217,7 +227,6 @@ class Mixer:
 
         # Merge include and exclude results
         merge = self.merge_ranges(include_results, exclude_results)
-
         filtered_content = ""
         for range in merge:
             # Use merged ranges to filter content
@@ -292,7 +301,15 @@ class Mixer:
                 final_ranges = temp_ranges
             return final_ranges
 
-        final_result = []
+        final_result: list[list[int]] = []
+        if not include_ranges:
+            return final_result
+
+        if not exclude_ranges:
+            for include_set in include_ranges:
+                final_result.extend(include_set)
+            return final_result
+
         for include_set in include_ranges:
             for exclude_set in exclude_ranges:
                 final_result.extend(process_ranges(include_set, exclude_set))

@@ -87,6 +87,31 @@ class FileClient:
         """
         return glob.glob(path, recursive=True)
 
+    def is_file(self, path: str) -> bool:
+        """
+        Checks if the given path is a file.
+
+        Args:
+            path (str): The path to check.
+
+        Returns:
+            bool: True if the path is a file, False otherwise.
+        """
+        return os.path.isfile(path)
+
+    def get_file_count(self, path: str) -> int:
+        """
+        Returns the number of files in the given path.
+
+        Args:
+            paths (str): The path to a file or directory.
+
+        Returns:
+            int: The number of files in the list of paths.
+        """
+        paths = self.glob(path)
+        return sum([1 for p in paths if self.is_file(p)])
+
     @staticmethod
     def is_glob(path: str) -> bool:
         """
@@ -153,6 +178,32 @@ class GSFileClient(FileClient):
         """
         paths = self.gcs.glob(path)
         return [f"gs://{path}" for path in paths]
+
+    def is_file(self, path: str) -> bool:
+        """
+        Checks if the given path is a file in Google Cloud Storage.
+
+        Args:
+            path (str): The path to check.
+
+        Returns:
+            bool: True if the path is a file, False otherwise.
+        """
+        return self.gcs.isfile(path)
+
+    def get_file_count(self, path: str) -> int:
+        """
+        Returns the number of files for a given path in Google Cloud Storage.
+
+        Args:
+            paths (str): The path to a file or directory.
+
+        Returns:
+            int: The number of files in the list of paths.
+        """
+
+        paths = self.glob(path)
+        return sum([1 for p in paths if self.is_file(p)])
 
 
 class S3FileClient(FileClient):

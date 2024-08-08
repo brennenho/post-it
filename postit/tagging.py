@@ -3,9 +3,9 @@ import json
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from postit.types import Doc, File, Source, TagResult
-from typing import Generic, TypeVar
+from typing import Any, Generic, TypeVar
 
-T = TypeVar("T", bound="Source")
+T = TypeVar("T", bound=Source)
 
 
 class BaseTagger(ABC, Generic[T]):
@@ -34,7 +34,7 @@ class BaseTagger(ABC, Generic[T]):
     imports: dict[str, dict] = {}
 
     @abstractmethod
-    def tag(self, source: T) -> TagResult:
+    def tag(self, source: T, **kwargs: Any) -> TagResult:
         """
         Tags the given source object and returns the result.
         This method should be overridden by custom taggers.
@@ -47,7 +47,7 @@ class BaseTagger(ABC, Generic[T]):
         """
         raise NotImplementedError
 
-    def output(self, source_tags: TagResult, exp: str) -> dict:
+    def output(self, source_tags: TagResult) -> dict:
         """
         Converts the tagged results into a dictionary format.
 
@@ -67,7 +67,7 @@ class BaseTagger(ABC, Generic[T]):
 
         return tags
 
-    def run_tagger(self, source: T, exp: str) -> dict:
+    def run_tagger(self, source: T, **kwargs: Any) -> dict:
         """
         Runs a tagger on the given source and returns the results in a dict.
 
@@ -77,8 +77,8 @@ class BaseTagger(ABC, Generic[T]):
         Returns:
             dict: A dictonary of the tagged results.
         """
-        source_tags = self.tag(source)
-        return self.output(source_tags, exp)
+        source_tags = self.tag(source, **kwargs)
+        return self.output(source_tags)
 
     def import_tags(self, imported_tags: list[list[str]]) -> None:
         taggers = set()
@@ -104,7 +104,7 @@ class BaseTagger(ABC, Generic[T]):
                 )
 
 
-class DocTagger(BaseTagger):
+class DocTagger(BaseTagger[Doc]):
     """
     A base class for document taggers.
 
@@ -113,11 +113,11 @@ class DocTagger(BaseTagger):
     """
 
     @abstractmethod
-    def tag(self, doc: Doc) -> TagResult:
+    def tag(self, source: Doc, **kwargs: Any) -> TagResult:
         raise NotImplementedError
 
 
-class FileTagger(BaseTagger):
+class FileTagger(BaseTagger[File]):
     """
     A base class for file taggers.
 
@@ -126,5 +126,5 @@ class FileTagger(BaseTagger):
     """
 
     @abstractmethod
-    def tag(self, file: File) -> TagResult:
+    def tag(self, source: File, **kwargs: Any) -> TagResult:
         raise NotImplementedError

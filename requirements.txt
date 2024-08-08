@@ -1,1 +1,4 @@
 gcsfs==2024.6.1
+rich==13.7.1
+mmh3
+bitarray

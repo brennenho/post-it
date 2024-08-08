@@ -1,55 +1,87 @@
 import json
 
 from postit.files import FileClient
+from postit.processor import BaseProcessor
 
 # TODO: split each folder into multiple files after a certain size
 # TODO: improve error handling
 # TODO: improve logging and progress tracking
 
 
-def generate_documents(
-    folder_paths: list[str], output_path: str = "./documents", keep_raw: bool = True
-) -> None:
+class DocumentGenerator(BaseProcessor):
     """
-    Generate structured documents in JSONL format from a list of folder paths.
+    Processor class for generating documents from files in a folder. Inherits from BaseProcessor.
+    One folder is processed per thread at a time.
 
-    Args:
-        folder_paths (list[str]): A list of folder paths containing the files to generate documents from.
-            Glob patterns are supported.
-
-        output_path (str, optional): The output path where the generated documents will be saved.
-            Defaults to "./documents". Output path must be a directory named "documents".
-
-        keep_raw (bool, optional): Toggle to keep the raw files after generating documents. Defaults to True.
+    Use DocumentGenerator.generate() as the entry point.
     """
 
-    # Expand any glob patterns
-    expanded_folders: list[list[str]] = [
-        FileClient.get_for_target(path).glob(path) for path in folder_paths
-    ]
+    label = "Generating Documents"
 
-    for folder_index, folder in enumerate(expanded_folders):
+    @staticmethod
+    def generate(
+        folder_paths: list[str],
+        output_path: str = "./documents",
+        keep_raw: bool = True,
+        num_processes: int = 1,
+    ):
+        """
+        Generates documents from files in the specified folder paths.
+        """
+        processor = DocumentGenerator(
+            output_path=output_path,
+            keep_raw=keep_raw,
+            num_processes=num_processes,
+        )
+        processor.run(folder_paths)
+
+    def __init__(
+        self,
+        output_path: str = "./documents",
+        keep_raw: bool = True,
+        num_processes: int = 1,
+    ):
+        super().__init__(num_processes)
+        self.output_path = output_path
+        self.keep_raw = keep_raw
+
+    def process(self, path: str):
+        """
+        Processes a folder by reading the files and writing the content to a .jsonl file.
+        """
         folder_content = ""
-        # Initialize a new FileClient for each folder to allow mixing local and remote paths
-        file_client = FileClient.get_for_target(folder_paths[folder_index])
+        file_client = FileClient.get_for_target(path)
+        folder = file_client.glob(path)
 
         for id, file in enumerate(folder):
-            content = file_client.read(file)
-            # Format document data in jsonl format
-            file_data = {"id": id, "source": file, "content": content}
-            folder_content += json.dumps(file_data) + "\n"
+            if file_client.is_file(file):
+                content = file_client.read(file)
+                # Format document data in jsonl format
+                file_data = {"id": id, "source": file, "content": content}
+                folder_content += json.dumps(file_data) + "\n"
+                self.progress.update(self.task, advance=1)
 
         # Get the top folder path to use as file name
-        top_folder_path = get_top_folder(folder_paths[folder_index])
+        top_folder_path = get_top_folder(path)
 
         # Clean up the top folder
-        if not keep_raw:
+        if not self.keep_raw:
             file_client.remove(top_folder_path)
 
         # Write the folder content to a .jsonl file
-        FileClient.get_for_target(output_path).write(
-            f"{output_path}/{top_folder_path.split('/')[-1]}.jsonl", folder_content
+        FileClient.get_for_target(self.output_path).write(
+            f"{self.output_path}/{top_folder_path.split('/')[-1]}.jsonl", folder_content
         )
+
+    def get_total(self, paths: list[str], **kwargs) -> int:
+        """
+        Returns the total number of documents to process.
+        """
+        total = 0
+        for path in paths:
+            file_client = FileClient.get_for_target(path)
+            total += file_client.get_file_count(path)
+        return total
 
 
 def get_top_folder(path: str) -> str:

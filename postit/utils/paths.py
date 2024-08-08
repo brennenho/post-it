@@ -19,3 +19,16 @@ def get_documents_path(path: str) -> str:
         raise ValueError("No `documents` directory found in the path.")
 
     return os.sep.join(segments[: seg_idx + 1])
+
+
+def get_ext(path: str) -> str:
+    """
+    Returns the file extension of the given path.
+
+    Args:
+        path (str): The path to extract the file extension from.
+
+    Returns:
+        str: The file extension.
+    """
+    return os.path.splitext(path)[1]
