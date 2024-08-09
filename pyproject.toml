@@ -1,23 +1,25 @@
-[build-system]
-requires = ["setuptools"]
-build-backend = "setuptools.build_meta"
-
-
-[project]
+[tool.poetry]
 name = "postit"
-version = "0.0.1"
-description = "A flexible Python data tagging framework for pre-training of AI models."
+version = "0.0.2"
+description = "A flexible data tagging framework for processing and filtering pretraining corpora for AI models."
+authors = ["Brennen Ho <post-it@brennen.dev>"]
 readme = "README.md"
-authors = [
-  { name="Brennen Ho", email="post-it@brennen.dev" },
-]
 
-[project.urls]
-Homepage = "https://github.com/brennenho/post-it"
-Issues = "https://github.com/brennenho/post-it/issues"
+[tool.poetry.dependencies]
+python = "^3.12"
+gcsfs = "^2024.6.1"
+rich = "^13.7.1"
+mmh3 = "^4.1.0"
+bitarray = "^2.9.2"
 
-[tool.setuptools.dynamic]
-dependencies = { file = ["requirements.txt"] }
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.2"
+ruff = "^0.5.7"
+mypy = "^1.11.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
 
 [tool.ruff.lint]
 extend-select = ["I"]
@@ -25,3 +27,6 @@ extend-select = ["I"]
 [tool.ruff.lint.isort]
 lines-between-types = 1
 no-sections = true
+
+[tool.mypy]
+disable_error_code = ["import-untyped"]
