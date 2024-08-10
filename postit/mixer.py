@@ -1,5 +1,7 @@
 import json
 import operator
+import os
+import yaml
 
 from postit.files import FileClient
 from postit.processor import BaseProcessor
@@ -31,6 +33,21 @@ class Condition:
         self.tag = tag
         self.operator = operator
         self.value = value
+
+    @staticmethod
+    def from_dict(data: dict) -> "Condition":
+        """
+        Create a Condition object from a dictionary.
+
+        Args:
+            data (dict): The dictionary containing the condition data.
+
+        Returns:
+            Condition: The Condition object created from the dictionary.
+        """
+        return Condition(
+            tag=data["tag"], operator=data["operator"], value=data["value"]
+        )
 
     def eval(self, doc: dict) -> list:
         """
@@ -97,6 +114,38 @@ class MixerConfig:
         self.input_paths = input_paths
         self.output_path = output_path
         self.conditions = conditions
+
+    @staticmethod
+    def load(path: str) -> "MixerConfig":
+        """
+        Create a MixerConfig object from a config file.
+
+        Args:
+            path (str): The path to the config file. Supported formats: .json, .yml, .yaml.
+
+        Returns:
+            MixerConfig: The MixerConfig object created from the dictionary.
+        """
+        file_client = FileClient.get_for_target(path)
+        if file_client.is_file(path):
+            content = file_client.read(path)
+            ext = os.path.splitext(path)[1]
+            if ext == ".json":
+                config = json.loads(content)
+            elif ext in [".yml", ".yaml"]:
+                config = yaml.safe_load(content)
+            else:
+                raise ValueError(f"Unsupported file format: {ext}")
+        else:
+            raise FileNotFoundError(f"File not found: {path}")
+
+        conditions = {
+            key: [Condition.from_dict(cond) for cond in value]
+            for key, value in config["conditions"].items()
+        }
+        config["conditions"] = conditions
+
+        return MixerConfig(**config)
 
 
 class Mixer(BaseProcessor):
