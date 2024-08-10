@@ -15,7 +15,6 @@ jobs:
     steps:
       - name: checkout code
         uses: actions/checkout@v4
-
       
       - name: setup python
         uses: actions/setup-python@v5
@@ -31,7 +30,7 @@ jobs:
       
       - name: check versions match
         run: |
-          RELEASE_TAG=${{{ github.event.release.tag_name }}#v}
+          RELEASE_TAG=${{ github.event.release.tag_name#v }}
           if [ "${{ env.PACKAGE_VERSION }}" == "$RELEASE_TAG" ]; then
             echo "Version match: ${{ env.PACKAGE_VERSION }}"
           else
