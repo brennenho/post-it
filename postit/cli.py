@@ -147,5 +147,5 @@ def mix(
     """
     Mix documents based on specified conditions.
     """
-    config = MixerConfig.load(config)
-    Mixer.mix(config, processes)
+    mixer_config = MixerConfig.load(config)
+    Mixer.mix(mixer_config, processes)
