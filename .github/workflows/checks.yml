@@ -5,6 +5,9 @@ on:
   pull_request:
     branches:
       - main
+  push:
+    branches:
+      - main
 
 permissions:
   contents: read
@@ -29,8 +32,9 @@ jobs:
         with:
           python-version: 3.12
         
-      - name: install dev tools
-        run: pip install -v --no-cache -r requirements.dev.txt
+      - name: install ruff
+        run: |
+          pip install ruff
       
       - name: run ruff
         run: |
@@ -52,11 +56,14 @@ jobs:
         
       - name: install dependencies
         run: |
-          pip install -v --no-cache -r requirements.dev.txt
-          pip install -v --no-cache -r requirements.txt
+          pip install poetry
+          poetry config virtualenvs.in-project true
+          poetry install
 
       - name: run mypy
-        run: mypy .
+        run: |
+          source .venv/bin/activate
+          mypy .
   
   tests:
     runs-on: ubuntu-latest
@@ -71,10 +78,13 @@ jobs:
         with:
           python-version: 3.12
         
-      - name: install dev tools
+      - name: install dependencies
         run: |
-          pip install -v --no-cache -r requirements.dev.txt
-          pip install -v --no-cache -r requirements.txt
+          pip install poetry
+          poetry config virtualenvs.in-project true
+          poetry install
 
       - name: run pytest
-        run: pytest
+        run: |
+          source .venv/bin/activate
+          pytest
