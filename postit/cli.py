@@ -2,6 +2,7 @@ import typer
 
 from postit.deduper import Deduper
 from postit.documents import DocumentGenerator
+from postit.example import download_data, news_example
 from postit.mixer import Mixer, MixerConfig
 from postit.processor import TaggerProcessor
 from typing import Annotated
@@ -149,3 +150,27 @@ def mix(
     """
     mixer_config = MixerConfig.load(config)
     Mixer.mix(mixer_config, processes)
+
+
+@app.command()
+def example(
+    directory: Annotated[
+        str,
+        typer.Argument(
+            help="Path to working directory for the example.",
+        ),
+    ] = "example",
+    data: Annotated[
+        bool,
+        typer.Option(
+            help="Download example data only.",
+        ),
+    ] = False,
+):
+    """
+    Run the example news processing pipeline.
+    """
+    if data:
+        download_data(directory)
+    else:
+        news_example(directory)

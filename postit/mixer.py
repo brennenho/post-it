@@ -147,6 +147,34 @@ class MixerConfig:
 
         return MixerConfig(**config)
 
+    def save(self, path: str) -> None:
+        """
+        Write the MixerConfig object to a file.
+
+        Args:
+            path (str): The path to write the config file to.
+        """
+        data = {
+            "name": self.name,
+            "experiments": self.experiments,
+            "input_paths": self.input_paths,
+            "output_path": self.output_path,
+            "conditions": {
+                key: [cond.__dict__ for cond in value]
+                for key, value in self.conditions.items()
+            },
+        }
+        ext = os.path.splitext(path)[1]
+        if ext == ".json":
+            content = json.dumps(data, indent=4)
+        elif ext in [".yml", ".yaml"]:
+            content = yaml.dump(data, indent=4)
+        else:
+            raise ValueError(f"Unsupported file format: {ext}")
+
+        file_client = FileClient.get_for_target(path)
+        file_client.write(path, content)
+
 
 class Mixer(BaseProcessor):
     label = "Mixing"

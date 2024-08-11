@@ -24,12 +24,26 @@ def test_get_top_folder(input_path, expected_top_folder):
 
 @patch("postit.documents.FileClient")
 def test_documents_generator(mock_file_client_cls):
-    mock_file_client = MagicMock()
-    mock_file_client_cls.get_for_target.return_value = mock_file_client
+    mock_file_client_root = MagicMock()
+    mock_file_client_subfolder = MagicMock()
+    mock_file_client_output = MagicMock()
 
-    mock_file_client.glob.return_value = ["file1", "file2"]
-    mock_file_client.read.side_effect = ["content1", "content2"]
-    mock_file_client.get_file_count.return_value = 2
+    def get_mock_for_target(target):
+        if target == "root":
+            return mock_file_client_root
+        elif target == "subfolder":
+            return mock_file_client_subfolder
+        elif target == "output":
+            return mock_file_client_output
+        return None
+
+    # Set the side_effect to use the function above
+    mock_file_client_cls.get_for_target.side_effect = get_mock_for_target
+
+    mock_file_client_root.glob.return_value = ["subfolder"]
+    mock_file_client_subfolder.glob.return_value = ["file1", "file2"]
+    mock_file_client_subfolder.read.side_effect = ["content1", "content2"]
+    mock_file_client_subfolder.get_file_count.return_value = 2
 
     DocumentGenerator.generate(["root"], "output", keep_raw=False)
 
@@ -40,5 +54,7 @@ def test_documents_generator(mock_file_client_cls):
         '{"id": 0, "source": "file1", "content": "content1"}\n'
         '{"id": 1, "source": "file2", "content": "content2"}\n'
     )
-    mock_file_client.write.assert_called_with("output/root.jsonl", expected_output)
-    mock_file_client.remove.assert_called_with("root")
+    mock_file_client_output.write.assert_called_with(
+        "output/subfolder.jsonl", expected_output
+    )
+    mock_file_client_subfolder.remove.assert_called_with("subfolder")
