@@ -4,6 +4,7 @@ version = "0.0.2"
 description = "A flexible data tagging framework for processing and filtering pretraining corpora for AI models."
 authors = ["Brennen Ho <post-it@brennen.dev>"]
 readme = "README.md"
+license = "Apache-2.0"
 
 [project.urls]
 Homepage = "https://github.com/brennenho/post-it"
