@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "postit"
-version = "0.0.2"
-description = "A flexible data tagging framework for processing and filtering pretraining corpora for AI models."
+version = "0.0.3"
+description = "A robust, extensible Python data tagging framework for dynamic processing and intelligent filtering of pretraining corpora for AI models."
 authors = ["Brennen Ho <post-it@brennen.dev>"]
 readme = "README.md"
 license = "Apache-2.0"
