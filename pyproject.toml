@@ -5,6 +5,10 @@ description = "A flexible data tagging framework for processing and filtering pr
 authors = ["Brennen Ho <post-it@brennen.dev>"]
 readme = "README.md"
 
+[project.urls]
+Homepage = "https://github.com/brennenho/post-it"
+Issues = "https://github.com/brennenho/post-it/issues"
+
 [tool.poetry.scripts]
 postit = "postit.cli:app"
 

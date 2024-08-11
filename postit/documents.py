@@ -33,7 +33,12 @@ class DocumentGenerator(BaseProcessor):
             keep_raw=keep_raw,
             num_processes=num_processes,
         )
-        processor.run(folder_paths)
+
+        subfolders = []
+        for path in folder_paths:
+            file_client = FileClient.get_for_target(path)
+            subfolders.extend(file_client.glob(path))
+        processor.run(subfolders)
 
     def __init__(
         self,
@@ -51,7 +56,7 @@ class DocumentGenerator(BaseProcessor):
         """
         folder_content = ""
         file_client = FileClient.get_for_target(path)
-        folder = file_client.glob(path)
+        folder = file_client.glob(f"{path}/**/*")
 
         for id, file in enumerate(folder):
             if file_client.is_file(file):
@@ -80,7 +85,10 @@ class DocumentGenerator(BaseProcessor):
         total = 0
         for path in paths:
             file_client = FileClient.get_for_target(path)
-            total += file_client.get_file_count(path)
+
+            for g in file_client.glob(path):
+                total += file_client.get_file_count(f"{g}/**/*")
+
         return total
 
 
