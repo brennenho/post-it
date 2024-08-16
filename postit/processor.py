@@ -18,23 +18,12 @@ from rich.progress import (
 from rich.table import Column
 from typing import Any
 
-# IN PROGRESS
-# TODO: implement as a class
-# TODO: implement parallel processing
 # TODO: improve error handling
-# TODO: improve logging and progress tracking
 
 
 class BaseProcessor:
     """
     Abstract base class for processing files in parallel.
-
-    Args:
-        num_processes (int): Number of processes to run in parallel.
-
-    Methods:
-        process: Abstract method to be implemented by subclasses.
-        run: Runs the processing on multiple paths in parallel using ThreadPoolExecutor.
     """
 
     label: str = "Processing"
@@ -99,7 +88,7 @@ class BaseProcessor:
 
 class TaggerProcessor(BaseProcessor):
     """
-    Processor class for tagging documents using taggers. Inherits from BaseProcessor.
+    Tags documents using taggers in parallel.
     One file is processed per thread at a time.
 
     Use TaggerProcessor.tag() as the entry point.
@@ -169,13 +158,6 @@ class TaggerProcessor(BaseProcessor):
                 raise ValueError(f"Unknown tagger type: {tagger}")
 
     def process(self, path: str):
-        """
-        Tag a single file using the specified taggers.
-
-        Args:
-            path (str): The path of the file to be processed.
-        """
-
         file = File.from_raw(path, self.file_client.read(path))
         imported_tags = []
         for imported_experiment in self.imported_experiments:
@@ -207,12 +189,12 @@ class TaggerProcessor(BaseProcessor):
         self.file_client.write(output_path, file.get_tags())
 
     def get_total(self, paths: list[str], **kwargs) -> int:
-        """
-        Returns the total number of tags to process.
-        """
-        total = 0
-        for path in paths:
-            file_client = FileClient.get_for_target(path)
-            total += len(file_client.read(path).splitlines())
+        total = sum(
+            [
+                len(FileClient.get_for_target(path).read(path).splitlines())
+                for path in paths
+            ]
+        )
         num_taggers = kwargs.get("num_taggers", 1)
+
         return total * num_taggers

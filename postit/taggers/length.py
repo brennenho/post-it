@@ -94,13 +94,12 @@ class NumDocs(FileTagger):
     name = "num_docs"
 
     def tag(self, source: File, **kwargs) -> TagResult:
-        tags: list[Tag] = []
-        tags.append(
+        tags: list[Tag] = [
             FloatTag(
                 name="total_docs",
                 start=0,
                 end=len(source.content),
                 value=len(source.content),
             )
-        )
+        ]
         return TagResult(source, tags)

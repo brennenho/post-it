@@ -10,9 +10,7 @@ logger = get_logger(__name__)
 
 class Deduper(TaggerProcessor):
     """
-    Processor class for deduplicating documents. Inherits from TaggerProcessor.
-    Makes use of tagging framework to tag documents as duplicates.
-
+    Uses tagging framework to tag documents as duplicates.
     Use Deduper.dedupe() as the entry point.
     """
 
@@ -83,9 +81,6 @@ class Deduper(TaggerProcessor):
             bloom.save(bloom_file)
 
     def get_total(self, paths: list[str], **kwargs) -> int:
-        """
-        Returns total number of steps for deduplication.
-        """
         file_client: FileClient = kwargs.get("file_client", None)
         num_taggers = kwargs.get("num_taggers", 1)
         total = sum([len(file_client.read(path).splitlines()) for path in paths])

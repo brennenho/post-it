@@ -12,13 +12,4 @@ logging.basicConfig(
 
 
 def get_logger(name: str) -> logging.Logger:
-    """
-    Returns a logger with the specified name.
-
-    Args:
-        name (str): The name of the logger.
-
-    Returns:
-        logging.Logger: A logger instance.
-    """
     return logging.getLogger(name)

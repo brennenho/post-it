@@ -29,12 +29,6 @@ class TaggerRegistry:
 
     @classmethod
     def add(cls):
-        """
-        Decorator to add a tagger function to the registry.
-
-        Returns:
-            The decorated function.
-        """
         cls()  # Ensure the registry is initialized
 
         def decorator(func):
@@ -51,18 +45,6 @@ class TaggerRegistry:
 
     @classmethod
     def get(cls, name):
-        """
-        Get a tagger function from the registry.
-
-        Args:
-            name (str): The name of the tagger.
-
-        Returns:
-            The tagger function.
-
-        Raises:
-            ValueError: If the specified tagger name is not found in the registry.
-        """
         tagger = cls._instance._registry.get(name)
         if not tagger:
             raise ValueError(
@@ -72,19 +54,10 @@ class TaggerRegistry:
 
     @classmethod
     def all(cls):
-        """
-        Get all tagger functions from the registry.
-
-        Returns:
-            A dictionary containing all tagger functions, where the keys are the tagger names and the values are the functions.
-        """
         return cls._instance._registry
 
     @classmethod
     def names(cls):
-        """
-        Get a list of all available tagger names.
-        """
         return list(cls._instance._registry.keys())
 
     @staticmethod
