@@ -21,11 +21,12 @@ To learn about each of these steps, please visit their corresponding pages.
 - Deduplication (coming soon)
 - Mixing (coming soon)
 
-## Example
+## Example: 20 Newsgroups
 This example uses Post-It as a command line tool to tag and mix the `20 Newsgroups Dataset`. The raw data and all files generated will take `~ 200 MB` of storage.
 
 > [!NOTE]
 > Walkthrough this entire example automatically by running `postit example`.
+> See [examples/news.py](../postit/examples/news.py) for the corresponding code and an example of how to utilize Post-It as a library.
 
 ### Download Raw Data
 Typically, downloading raw data isn't managed by Post-It. However, for this example you can download the `20 Newsgroups Dataset` by running `postit example --data [DIRECTORY]`. This will download the dataset to a local directory. For the rest of this example, we'll use `example` as our directory.
@@ -45,9 +46,9 @@ A `File` is stored as a `JSONL` file. Each `Document` in the file is stored as a
 The document generator can be invoked with `postit generate`. Run `postit generate --help` to see the available options.
 
 For this example, run:
- ```bash
- postit generate example/20news-18828/* --output example/documents
- ```
+```bash
+postit generate example/20news-18828/* --output example/documents
+```
 - `example/20news-18828/*`: Path to raw data
     - Use glob patterns. The glob pattern should expand out to a list of subdirectories that will be used for `File` naming.
 - `--output example/documents`: Specify the output path (optional)
