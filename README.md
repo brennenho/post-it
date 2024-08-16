@@ -1,6 +1,7 @@
-# :bookmark_tabs: Post-It
-
-[![checks](https://github.com/brennenho/post-it/actions/workflows/checks.yml/badge.svg)](https://github.com/brennenho/post-it/actions/workflows/checks.yml)
+# Post-It
+[![license](https://img.shields.io/github/license/brennenho/post-it?style=flat-square)](https://github.com/brennenho/post-it/blob/main/LICENSE)
+[![PyPI](https://img.shields.io/pypi/v/postit.svg?style=flat-square&label=PyPI)](https://pypi.org/project/postit/)
+[![checks](https://img.shields.io/github/actions/workflow/status/brennenho/post-it/checks.yml?branch=main&style=flat-square&label=checks)](https://github.com/brennenho/post-it/actions/workflows/checks.yml)
 
 A robust, extensible Python data tagging framework for dynamic processing and intelligent filtering of pretraining corpora for AI models.
 
@@ -15,15 +16,15 @@ To learn more about using Post-It, please visit the [documentation](https://gith
 
 ## Why Data Tagging?
 
-Data is the backbone of machine learning. With a vast variety of companies developing ML models, processing and filtering data to create high-quality datasets is extremely important.
+Datasets form the backbone of modern machine learning. A high-quality dataset is vital to successfully train an AI model. Data tagging is the process of labeling raw data based on the content of the data and related metadata.
 
-The popularity of **continued pretraining** (performing pretraining on existing LLMs for domain-adaptation) makes tools like Post-It increasingly important.
+The labels created by data tagging can then be used to filter out low-quality data to create a final training corpus. Efficient data tagging is becoming increasingly important with the growing popularity of **continued pretraining** (pretraining an existing LLM, often to adapt the model to a specific domain).
 
-In addition, tagging data instead of directly filtering it provides flexibility. It is easy to test the impact of removing different types of data on the final pretraining corpus, enabling quick iteration.
+Without data tagging, creating a high-quality dataset involves directly filtering out poor data. This makes iteration and testing of different types of filters difficult and inefficient.
 
 ## Why Post-It?
 - **Extensible:** Designed for easy adaptation into any number of data processing workflows.
-- **Fast:** Built-in parallization to process large datasets.
+- **Fast:** Built-in parallization enables efficient processing of large datasets.
 - **Flexible:** Supports local and remote cloud storage.
 - **Capable:** Packaged with a variety of popular taggers, ready to use out of the box.
 
