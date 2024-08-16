@@ -71,7 +71,7 @@ class File(Source):
         content = [
             Doc(data["id"], data["source"], data["content"])
             for line in raw.strip().splitlines()
-            for data in json.loads(line)
+            for data in [json.loads(line)]
         ]
         return File(path, content)
 

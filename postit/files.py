@@ -4,6 +4,7 @@ import os
 import shutil
 
 from enum import Enum
+from typing import IO
 
 
 class FileClientTarget(Enum):
@@ -36,7 +37,7 @@ class FileClient:
         else:
             return FileClient()
 
-    def open(self, path: str, mode: str) -> object:
+    def open(self, path: str, mode: str) -> IO:
         return open(path, mode)
 
     def read(self, path: str) -> str:
@@ -78,7 +79,7 @@ class GSFileClient(FileClient):
 
     gcs = gcsfs.GCSFileSystem()
 
-    def open(self, path: str, mode: str) -> object:
+    def open(self, path: str, mode: str) -> IO:
         return self.gcs.open(path, mode)
 
     def read(self, path: str) -> str:
