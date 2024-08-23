@@ -4,6 +4,7 @@ import os
 import shutil
 
 from enum import Enum
+from typing import IO
 
 
 class FileClientTarget(Enum):
@@ -36,27 +37,14 @@ class FileClient:
         else:
             return FileClient()
 
+    def open(self, path: str, mode: str) -> IO:
+        return open(path, mode)
+
     def read(self, path: str) -> str:
-        """
-        Read the contents of a local file and return it as a string.
-
-        Args:
-            path (str): The path to a local file.
-
-        Returns:
-            str: The contents of the file as a string.
-        """
         with open(path, "rb") as file:
             return file.read().decode(errors="ignore")
 
     def write(self, path: str, content: str) -> None:
-        """
-        Write the given content to the specified local file path.
-
-        Args:
-            path (str): The path of the file to write.
-            content (str): The content to write to the file.
-        """
         dir_path = os.path.dirname(path)
         os.makedirs(dir_path, exist_ok=True)
 
@@ -64,65 +52,23 @@ class FileClient:
             file.write(content)
 
     def remove(self, path: str) -> None:
-        """
-        Removes a local file or directory at the given path.
-
-        Args:
-            path (str): The path to the file or directory to be removed.
-        """
         if os.path.isdir(path):
             shutil.rmtree(path)
         else:
             os.remove(path)
 
     def glob(self, path: str) -> list[str]:
-        """
-        Returns a list of local file paths that match the specified pattern.
-
-        Args:
-            path (str): The pattern to match against file paths.
-
-        Returns:
-            list[str]: A list of file paths that match the specified pattern.
-        """
         return glob.glob(path, recursive=True)
 
     def is_file(self, path: str) -> bool:
-        """
-        Checks if the given path is a file.
-
-        Args:
-            path (str): The path to check.
-
-        Returns:
-            bool: True if the path is a file, False otherwise.
-        """
         return os.path.isfile(path)
 
     def get_file_count(self, path: str) -> int:
-        """
-        Returns the number of files in the given path.
-
-        Args:
-            paths (str): The path to a file or directory.
-
-        Returns:
-            int: The number of files in the list of paths.
-        """
         paths = self.glob(path)
         return sum([1 for p in paths if self.is_file(p)])
 
     @staticmethod
     def is_glob(path: str) -> bool:
-        """
-        Checks if the given path is a glob pattern.
-
-        Args:
-            path (str): The path to check.
-
-        Returns:
-            bool: True if the path is a glob pattern, False otherwise.
-        """
         return any(char in path for char in ["*", "?", "[", "]"])
 
 
@@ -133,75 +79,28 @@ class GSFileClient(FileClient):
 
     gcs = gcsfs.GCSFileSystem()
 
+    def open(self, path: str, mode: str) -> IO:
+        return self.gcs.open(path, mode)
+
     def read(self, path: str) -> str:
-        """
-        Read the contents of a file from Google Cloud Storage.
-
-        Args:
-            path (str): The remote path of the file to read.
-
-        Returns:
-            str: The contents of the file as a string.
-        """
         with self.gcs.open(path, "rb") as file:
             return file.read().decode(errors="ignore")
 
     def write(self, path: str, content: str) -> None:
-        """
-        Write content to a file in Google Cloud Storage.
-
-        Args:
-            path (str): The remote path of the file to write.
-            content (str): The content to write to the file.
-        """
         with self.gcs.open(path, "w") as file:
             file.write(content)
 
     def remove(self, path: str) -> None:
-        """
-        Remove a file or directory from Google Cloud Storage.
-
-        Args:
-            path (str): The remote path of the file or directory to remove.
-        """
         self.gcs.rm(path, recursive=True)
 
     def glob(self, path: str) -> list[str]:
-        """
-        Glob for files in Google Cloud Storage.
-
-        Args:
-            path (str): The glob pattern to match.
-
-        Returns:
-            list[str]: A list of file paths matching the glob pattern.
-        """
         paths = self.gcs.glob(path)
         return [f"gs://{path}" for path in paths]
 
     def is_file(self, path: str) -> bool:
-        """
-        Checks if the given path is a file in Google Cloud Storage.
-
-        Args:
-            path (str): The path to check.
-
-        Returns:
-            bool: True if the path is a file, False otherwise.
-        """
         return self.gcs.isfile(path)
 
     def get_file_count(self, path: str) -> int:
-        """
-        Returns the number of files for a given path in Google Cloud Storage.
-
-        Args:
-            paths (str): The path to a file or directory.
-
-        Returns:
-            int: The number of files in the list of paths.
-        """
-
         paths = self.glob(path)
         return sum([1 for p in paths if self.is_file(p)])
 

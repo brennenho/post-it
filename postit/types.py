@@ -5,10 +5,6 @@ from typing import Union
 
 
 class Source(ABC):
-    """
-    Abstract base class for source objects.
-    """
-
     __slots__ = "source", "tags"
 
     def __init__(self, source: str):
@@ -26,14 +22,6 @@ class Source(ABC):
 
 
 class Doc(Source):
-    """
-    Represents a document.
-
-    Attributes:
-        id (int): The id of the document.
-        content (str): The content of the document.
-    """
-
     __slots__ = "id", "content"
 
     def __init__(self, id: int, source: str, content: str):
@@ -42,12 +30,6 @@ class Doc(Source):
         self.content = content
 
     def get_tags(self) -> str:
-        """
-        Get the tags of the document.
-
-        Returns:
-            str: A JSON string representing the document's tags.
-        """
         return json.dumps(
             {
                 "id": self.id,
@@ -58,13 +40,6 @@ class Doc(Source):
 
 
 class File(Source):
-    """
-    Represents a file containing a list of documents.
-
-    Attributes:
-        content (list[Doc]): The list of documents in the file.
-    """
-
     __slots__ = "content"
 
     def __init__(self, source: str, content: list[Doc]):
@@ -72,12 +47,6 @@ class File(Source):
         self.content = content
 
     def get_tags(self) -> str:
-        """
-        Returns the tags of the file and its documents.
-
-        Returns:
-            str: The JSONL string representation of the file's tags and the tags of its documents.
-        """
         json_str = json.dumps(
             {
                 "source": self.source,
@@ -98,16 +67,19 @@ class File(Source):
         Returns:
             File: The created File object.
         """
-        content = []
-        for line in raw.strip().splitlines():
-            data = json.loads(line)
-            content.append(Doc(data["id"], data["source"], data["content"]))
+
+        content = [
+            Doc(data["id"], data["source"], data["content"])
+            for line in raw.strip().splitlines()
+            for data in [json.loads(line)]
+        ]
         return File(path, content)
 
 
 class Tag(ABC):
     """
     Abstract base class for tags.
+    NOTE: Do not instantiate this class directly. Use FloatTag or StrTag instead.
 
     Attributes:
         name (str): The name of the tag.
@@ -125,21 +97,12 @@ class Tag(ABC):
     @property
     @abstractmethod
     def value(self) -> Union[float, str]:
-        """
-        Returns the value of the object.
-
-        Returns:
-            Union[float, str]: The value of the object, which can be either a float or a string.
-        """
         pass
 
 
 class FloatTag(Tag):
     """
-    Represents a tag with a floating-point value.
-
-    Attributes:
-        value (float): The floating-point value associated with the tag.
+    Tags a floating-point value.
     """
 
     __slots__ = "_value"
@@ -160,10 +123,7 @@ class FloatTag(Tag):
 
 class StrTag(Tag):
     """
-    Represents a string tag.
-
-    Attributes:
-        value (str): The value of the tag.
+    Tags a string value.
     """
 
     __slots__ = "_value"
@@ -183,11 +143,7 @@ class StrTag(Tag):
 
 class TagResult(ABC):
     """
-    Represents the result of a tagging operation.
-
-    Attributes:
-        source (Source): The source of the tagging operation.
-        tags (list[Tag]): The list of tags associated with the source.
+    Results of a tagging operation.
     """
 
     __slots__ = "source", "tags"

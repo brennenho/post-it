@@ -8,7 +8,7 @@ from postit.types import Doc, FloatTag, Tag
 @tagger
 class CodeComments(DocTagger):
     """
-    Tags the comment blocks in code files.
+    Tag comment blocks in code.
     Supported symbols: `#`, `//`, `/* .. */`, `<!-- .. -->`
     Derive this class to add support for other symbols.
 
@@ -34,10 +34,10 @@ class CodeComments(DocTagger):
             (re.escape(start), re.escape(end)) for start, end in self.multi_line_symbols
         ]
 
-        # Regex pattern to match strings
+        # Identify strings to avoid matching comment chars within them
         string_pattern = r"(?:(?<!\\)\"(?:\\.|[^\"\\])*\"|(?<!\\)'(?:\\.|[^'\\])*')"
 
-        # Regex patterns to match single and multi-line comments
+        # Comment patterns
         single_pattern = r"|".join(
             [
                 symbol + r"[^\n]*(?:\n" + symbol + r"[^\n]*)*"
@@ -48,27 +48,30 @@ class CodeComments(DocTagger):
             [start + r"(.*?)" + end for start, end in escaped_multi]
         )
 
-        # Combine the patterns into a single pattern
         comment_pattern = rf"(?:{string_pattern})|({single_pattern})|({multi_pattern})"
 
-        comments = []
-        for match in re.finditer(
-            comment_pattern, source.content, re.MULTILINE | re.DOTALL
-        ):
-            if match.lastindex:
-                comment_start = match.start(match.lastindex)
-                comment_end = match.end(match.lastindex)
-                comments.append((comment_start, comment_end))
+        comments = [
+            (match.start(match.lastindex), match.end(match.lastindex))
+            for match in re.finditer(
+                comment_pattern, source.content, re.MULTILINE | re.DOTALL
+            )
+            if match.lastindex
+        ]
 
-        tags: list[Tag] = []
-        for start, end in comments:
-            tags.append(FloatTag("comments", start, end, 1))
+        tags: list[Tag] = [
+            FloatTag("comments", start, end, 1) for start, end in comments
+        ]
 
         return TagResult(source, tags)
 
 
 @tagger
 class CodeLicenses(DocTagger):
+    """
+    Tag comment blocks that contain license information.
+    `code_comments` tagger must be run before this tagger.
+    """
+
     name = "code_licenses"
     dependencies = ["code_comments"]
 
@@ -77,11 +80,12 @@ class CodeLicenses(DocTagger):
             r"\b(copyright|license|licensed|all rights reserved)", re.IGNORECASE
         )
 
+        # Import tagged comment blocks from the `code_comments` tagger
         comments = self.imports.get("code_comments/comments", {}).get(source.id, [])
-        tags: list[Tag] = []
-
-        for start, end, _ in comments:
-            if license_pattern.search(source.content[start:end]):
-                tags.append(FloatTag("notice", start, end, 1))
+        tags: list[Tag] = [
+            FloatTag("notice", start, end, 1)
+            for start, end, _ in comments
+            if license_pattern.search(source.content[start:end])
+        ]
 
         return TagResult(source, tags)

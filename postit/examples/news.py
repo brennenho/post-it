@@ -16,16 +16,11 @@ from urllib.request import urlretrieve
 
 
 def custom_filter(tarinfo, path):
-    """
-    Custom filter to avoid deprecation warning when extracting tar files.
-    """
+    # Avoid deprecation warning when extracting tar files
     return tarinfo
 
 
 def download_20newsgroups_raw(progress: Progress, task, data_dir):
-    """
-    Download the 20 Newsgroups dataset.
-    """
     url = "http://qwone.com/~jason/20Newsgroups/20news-18828.tar.gz"
     tar_filename = os.path.join(data_dir, "20news-18828.tar.gz")
 
@@ -34,12 +29,12 @@ def download_20newsgroups_raw(progress: Progress, task, data_dir):
     if not os.path.exists(tar_filename):
         progress.update(task, description="[yellow]Downloading tar file...", advance=50)
         urlretrieve(url, tar_filename)
-        print(f"[red]Downloaded tar file to {tar_filename}.")
 
     # Extract the tar file with the custom filter to avoid deprecation warning
     with tarfile.open(tar_filename, "r:gz") as tar:
         progress.update(task, description="[yellow]Extracting tar file...")
         tar.extractall(path=data_dir, filter=custom_filter)
+
     # Remove the tar file
     os.remove(tar_filename)
     progress.update(task, description="[green]Download complete.", advance=50)
@@ -56,7 +51,7 @@ def download_data(data_dir):
         task = progress.add_task("[yellow]Initiating download...", total=100)
         download_20newsgroups_raw(progress, task, data_dir)
 
-    print(f"[red]Successfully downloaded dataset to {data_dir}/20news-18828.")
+    print(f"Successfully downloaded dataset to {data_dir}/20news-18828.")
 
 
 def news_example(data_dir="example"):
@@ -71,14 +66,14 @@ def news_example(data_dir="example"):
         4. Mix documents based on length and deduplication tags.
     
     All data from this example will be stored in the `{data_dir}` directory.
-    Logging messages in red are created by this example and are not part of the PostIt library."""
+"""
     print(Markdown(md))
     download_data(data_dir)
 
-    print("[red]Press Enter to continue...")
+    print("Continue? (return)")
     input()
 
-    print("[red]Generating documents from raw data. Equivalent CLI command:")
+    print("Generating documents from raw data. Equivalent CLI command:")
     print(
         Markdown(
             f"```md\npostit generate {data_dir}/20news-18828/* --output {data_dir}/documents\n```"
@@ -88,12 +83,11 @@ def news_example(data_dir="example"):
         folder_paths=[f"{data_dir}/20news-18828/*"],
         output_path=f"{data_dir}/documents",
     )
-    print(f"[red]Successfully generated documents to {data_dir}/documents.")
-    print("[red]Press Enter to continue...")
+    print("Continue? (return)")
     input()
 
     print(
-        "[red]Tagging documents with doc_length and paragraph_length taggers. Equivalent CLI command:"
+        "Tagging documents with doc_length and paragraph_length taggers. Equivalent CLI command:"
     )
     print(
         Markdown(
@@ -105,11 +99,10 @@ def news_example(data_dir="example"):
         tagger_names=["doc_length", "paragraph_length"],
         experiment="length",
     )
-    print(f"[red]Successfully tagged documents. Results at {data_dir}/tags/length.")
-    print("[red]Press Enter to continue...")
+    print("Continue? (return)")
     input()
 
-    print("[red]Deduplicating documents. Equivalent CLI command:")
+    print("Deduplicating documents. Equivalent CLI command:")
     print(
         Markdown(
             f'```md\npostit dedupe "{data_dir}/documents/*" --docs --bloom-file {data_dir}/bloom.pkl\n```'
@@ -121,14 +114,11 @@ def news_example(data_dir="example"):
         dedupe_docs=True,
         bloom_file=f"{data_dir}/bloom.pkl",
     )
-    print(
-        f"[red]Successfully deduplicated documents and saved bloom filter to {data_dir}/bloom.pkl. Results at {data_dir}/tags/dedupe."
-    )
-    print("[red]Press Enter to continue...")
+    print("Continue? (return)")
     input()
 
     print(
-        "[red]Mixing documents based on length and deduplication tags. Equivalent CLI command:"
+        "Mixing documents based on length and deduplication tags. Equivalent CLI command:"
     )
     print(Markdown(f"```md\npostit mix {data_dir}/news_config.json\n```"))
     mixer_config = MixerConfig(
@@ -146,4 +136,4 @@ def news_example(data_dir="example"):
     )
     mixer_config.save(f"{data_dir}/news_config.json")
     Mixer.mix(mixer_config)
-    print(f"[red]Successfully mixed documents. Results at {data_dir}/news-mix.")
+    print(f"Example complete. See all results in the `{data_dir}` directory.")

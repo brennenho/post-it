@@ -13,20 +13,13 @@ class BaseTagger(ABC, Generic[T]):
     Base class for taggers.
 
     This class defines the common interface and behavior for taggers.
-    DocTagger and FileTagger classes are inherited from this class.
     NOTE: Do not inherit from this class directly. Inherit from DocTagger or FileTagger instead.
 
     Attributes:
         name (str): The name of the tagger.
         dependencies (list[str]): The list of tagger dependencies.
         imports (dict[str, dict]): The imported tags from other experiments.
-            This is generated automatically by the processor. You should not need to modify this.
-
-    Methods:
-        tag(source: T) -> TagResult: Performs the tagging operation on the given source.
-        output(source_tags: TagResult) -> list: Converts the tagged results into a list format.
-        run_tagger(source: T) -> tuple[str, list]: Runs the tagger on the given source and returns the name and output.
-        import_tags(imported_tags: list[str]) -> None: Imports tags from other experiments.
+            NOTE: This is generated automatically by the processor. You should not need to modify this.
     """
 
     name: str
@@ -40,7 +33,7 @@ class BaseTagger(ABC, Generic[T]):
         This method should be overridden by custom taggers.
 
         Args:
-            source (T): The source object to be tagged.
+            source (T): The source object to be tagged. (Doc or File)
 
         Returns:
             TagResult: The result of the tagging operation.
@@ -50,15 +43,6 @@ class BaseTagger(ABC, Generic[T]):
     def output(self, source_tags: TagResult) -> dict:
         """
         Converts the tagged results into a dictionary format.
-
-        Args:
-            source_tags (TagResult): The source_tags to be converted.
-            exp (str): The experiment name.
-
-        Returns:
-            dict: A dictionary of the tagged results.
-                Keys are in the format: `[experiment name]_[tagger name]_[tag name]`.
-                Values are in the format: `[start, end, value]` for each tag.
         """
         tags = defaultdict(list)
         if source_tags:
@@ -70,17 +54,14 @@ class BaseTagger(ABC, Generic[T]):
     def run_tagger(self, source: T, **kwargs: Any) -> dict:
         """
         Runs a tagger on the given source and returns the results in a dict.
-
-        Args:
-            source (T): The source to be tagged. Should be a Doc or File object.
-
-        Returns:
-            dict: A dictonary of the tagged results.
         """
         source_tags = self.tag(source, **kwargs)
         return self.output(source_tags)
 
     def import_tags(self, imported_tags: list[list[str]]) -> None:
+        """
+        Imports tags from other experiments.
+        """
         taggers = set()
         for experiment in imported_tags:
             for tag_json in experiment:

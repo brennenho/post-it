@@ -2,7 +2,7 @@ import typer
 
 from postit.deduper import Deduper
 from postit.documents import DocumentGenerator
-from postit.example import download_data, news_example
+from postit.examples.news import download_data, news_example
 from postit.mixer import Mixer, MixerConfig
 from postit.processor import TaggerProcessor
 from typing import Annotated

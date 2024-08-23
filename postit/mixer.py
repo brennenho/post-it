@@ -9,12 +9,11 @@ from postit.utils.paths import get_documents_path
 from typing import Union
 
 # TODO: improve error handling
-# TODO: improve logging and progress tracking
 
 
 class Condition:
     """
-    Represents a condition for filtering data.
+    A condition to filter documents based on tags.
 
     Attributes:
         tag (str): The tag to filter on.
@@ -36,15 +35,6 @@ class Condition:
 
     @staticmethod
     def from_dict(data: dict) -> "Condition":
-        """
-        Create a Condition object from a dictionary.
-
-        Args:
-            data (dict): The dictionary containing the condition data.
-
-        Returns:
-            Condition: The Condition object created from the dictionary.
-        """
         return Condition(
             tag=data["tag"], operator=data["operator"], value=data["value"]
         )
@@ -72,17 +62,16 @@ class Condition:
         if self.operator not in operators:
             raise ValueError(f"Invalid operator: {self.operator}")
 
-        valid_tags = []
-        for tag in doc.get(self.tag, []):
-            if operators[self.operator](tag[2], self.value):
-                valid_tags.append(tag)
-
-        return valid_tags
+        return [
+            tag
+            for tag in doc.get(self.tag, [])
+            if operators[self.operator](tag[2], self.value)
+        ]
 
 
 class MixerConfig:
     """
-    Represents the configuration for a mixer.
+    Configuration for a mixer.
 
     Attributes:
         name (str): The name of the mixer.
@@ -118,13 +107,7 @@ class MixerConfig:
     @staticmethod
     def load(path: str) -> "MixerConfig":
         """
-        Create a MixerConfig object from a config file.
-
-        Args:
-            path (str): The path to the config file. Supported formats: .json, .yml, .yaml.
-
-        Returns:
-            MixerConfig: The MixerConfig object created from the dictionary.
+        Create a MixerConfig object from a JSON or YAML file.
         """
         file_client = FileClient.get_for_target(path)
         if file_client.is_file(path):
@@ -149,10 +132,7 @@ class MixerConfig:
 
     def save(self, path: str) -> None:
         """
-        Write the MixerConfig object to a file.
-
-        Args:
-            path (str): The path to write the config file to.
+        Write the MixerConfig object to a JSON or YAML file.
         """
         data = {
             "name": self.name,
@@ -177,6 +157,11 @@ class MixerConfig:
 
 
 class Mixer(BaseProcessor):
+    """
+    Mix documents based on specified conditions.
+    Use Mixer.mix() as the entry point.
+    """
+
     label = "Mixing"
 
     @staticmethod
@@ -251,24 +236,10 @@ class Mixer(BaseProcessor):
         return out_file
 
     def get_total(self, paths: list[str], **kwargs) -> int:
-        """
-        Returns the total number of documents to process.
-        """
         file_client: FileClient = kwargs.get("file_client", None)
         return sum([len(file_client.read(path).splitlines()) for path in paths])
 
     def merge_tags(self, doc_id: str, raw_tags: list[str]) -> dict:
-        """
-        Merges tags from a list of raw tags based on the document index.
-
-        Args:
-            doc_id (str): The id of the document.
-            raw_tags (list[str]): A list of raw tags in JSON format.
-
-        Returns:
-            dict: A dictionary containing the merged tags.
-
-        """
         tags = {}
         for tag in raw_tags:
             tag_json = json.loads(tag)
@@ -280,19 +251,6 @@ class Mixer(BaseProcessor):
     def apply_conditions(
         self, doc: dict, conditions: dict[str, list[Condition]]
     ) -> dict:
-        """
-        Apply conditions to filter the content of a document.
-
-        Args:
-            doc (dict): The document to be filtered.
-            conditions (dict[str, list[Condition]]): The conditions to be applied.
-
-        Returns:
-            dict: The filtered document.
-
-        Raises:
-            ValueError: If an invalid operator is used in the conditions.
-        """
         if not conditions:
             return doc
 
@@ -304,12 +262,12 @@ class Mixer(BaseProcessor):
 
         # Merge include and exclude results
         merge = self.merge_ranges(include_results, exclude_results)
-        filtered_content = ""
-        for range in merge:
-            # Use merged ranges to filter content
-            filtered_content += doc["content"][range[0] : range[1] + 1]
 
+        filtered_content = "".join(
+            [doc["content"][range[0] : range[1] + 1] for range in merge]
+        )
         doc["content"] = filtered_content
+
         return doc
 
     def merge_ranges(
@@ -317,30 +275,9 @@ class Mixer(BaseProcessor):
         include_ranges: list[list[list[int]]],
         exclude_ranges: list[list[list[int]]],
     ) -> list[list[int]]:
-        """
-        Merge the include_ranges and exclude_ranges to generate the final result.
-
-        Args:
-            include_ranges (list[list[list[int]]]): A list of include ranges.
-            exclude_ranges (list[list[list[int]]]): A list of exclude ranges.
-
-        Returns:
-            list[list[int]]: The final result after processing the ranges.
-        """
-
         def subtract_range(
             inc_range: list[int], exc_range: list[int]
         ) -> list[list[int]]:
-            """
-            Subtract the excluded range from the included range.
-
-            Args:
-                inc_range (list[int]): The included range represented as a list of three integers: [start, end, value].
-                exc_range (list[int]): The excluded range represented as a list of three integers: [start, end, value].
-
-            Returns:
-                list[list[int]]: A list of ranges resulting from subtracting the excluded range from the included range.
-            """
             inc_start, inc_end, inc_value = inc_range
             exc_start, exc_end, _ = exc_range
 
@@ -360,16 +297,6 @@ class Mixer(BaseProcessor):
         def process_ranges(
             include_set: list[list[int]], exclude_set: list[list[int]]
         ) -> list[list[int]]:
-            """
-            Process the given include and exclude sets of ranges and return the final ranges.
-
-            Args:
-                include_set (list[list[int]]): A list of inclusive ranges.
-                exclude_set (list[list[int]]): A list of exclusive ranges.
-
-            Returns:
-                list[list[int]]: The final ranges after processing the include and exclude sets.
-            """
             final_ranges = include_set[:]
             for exc_range in exclude_set:
                 temp_ranges = []

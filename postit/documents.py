@@ -2,15 +2,15 @@ import json
 
 from postit.files import FileClient
 from postit.processor import BaseProcessor
+from postit.utils.paths import get_top_folder
 
 # TODO: split each folder into multiple files after a certain size
 # TODO: improve error handling
-# TODO: improve logging and progress tracking
 
 
 class DocumentGenerator(BaseProcessor):
     """
-    Processor class for generating documents from files in a folder. Inherits from BaseProcessor.
+    Generates documents from files in the specified folder paths.
     One folder is processed per thread at a time.
 
     Use DocumentGenerator.generate() as the entry point.
@@ -25,9 +25,6 @@ class DocumentGenerator(BaseProcessor):
         keep_raw: bool = True,
         num_processes: int = 1,
     ):
-        """
-        Generates documents from files in the specified folder paths.
-        """
         processor = DocumentGenerator(
             output_path=output_path,
             keep_raw=keep_raw,
@@ -79,61 +76,14 @@ class DocumentGenerator(BaseProcessor):
         )
 
     def get_total(self, paths: list[str], **kwargs) -> int:
-        """
-        Returns the total number of documents to process.
-        """
         total = 0
         for path in paths:
             file_client = FileClient.get_for_target(path)
-
-            for g in file_client.glob(path):
-                total += file_client.get_file_count(f"{g}/**/*")
+            total += sum(
+                [
+                    file_client.get_file_count(f"{g}/**/*")
+                    for g in file_client.glob(path)
+                ]
+            )
 
         return total
-
-
-def get_top_folder(path: str) -> str:
-    """
-    Returns the top-level folder from the given path.
-
-    Args:
-        path (str): The path to extract the top-level folder from.
-
-    Returns:
-        str: The top-level folder path.
-    """
-    special_chars = ["*", "?", "[", "]", "{", "}"]  # Glob pattern special characters
-    split_path = path.split("/")
-    segments = []
-
-    # Iterate over the path segments in reverse order
-    for segment in reversed(split_path):
-        if "**" in segment:
-            continue
-
-        # Check if the segment contains any special characters
-        contains_special_chars = False
-        for i, char in enumerate(segment):
-            if char in special_chars:
-                if i > 0 and segment[i - 1] == "/":
-                    continue
-                else:
-                    contains_special_chars = True
-                    break
-
-        if not contains_special_chars:
-            segments.append(segment)
-
-    if not segments:
-        return path
-
-    # Join the segments in reverse order to get the top folder path
-    top_folder_path = "/".join(reversed(segments))
-
-    # Handle special cases for root and home directories
-    if split_path[0] == "":
-        return "/" + top_folder_path
-    elif split_path[0] == "~":
-        return "~/" + top_folder_path
-
-    return top_folder_path
