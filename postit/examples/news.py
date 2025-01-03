@@ -15,14 +15,9 @@ from rich.progress import (
 from urllib.request import urlretrieve
 
 
-def custom_filter(tarinfo, path):
-    # Avoid deprecation warning when extracting tar files
-    return tarinfo
-
-
 def download_20newsgroups_raw(progress: Progress, task, data_dir):
-    url = "http://qwone.com/~jason/20Newsgroups/20news-18828.tar.gz"
-    tar_filename = os.path.join(data_dir, "20news-18828.tar.gz")
+    url = "https://github.com/brennenho/post-it/raw/refs/heads/main/docs/20_newsgroups.tar.gz"
+    tar_filename = os.path.join(data_dir, "20_newsgroups.tar.gz")
 
     os.makedirs(data_dir, exist_ok=True)
 
@@ -33,7 +28,7 @@ def download_20newsgroups_raw(progress: Progress, task, data_dir):
     # Extract the tar file with the custom filter to avoid deprecation warning
     with tarfile.open(tar_filename, "r:gz") as tar:
         progress.update(task, description="[yellow]Extracting tar file...")
-        tar.extractall(path=data_dir, filter=custom_filter)
+        tar.extractall(path=data_dir)
 
     # Remove the tar file
     os.remove(tar_filename)
@@ -51,7 +46,7 @@ def download_data(data_dir):
         task = progress.add_task("[yellow]Initiating download...", total=100)
         download_20newsgroups_raw(progress, task, data_dir)
 
-    print(f"Successfully downloaded dataset to {data_dir}/20news-18828.")
+    print(f"Successfully downloaded dataset to {data_dir}/20_newsgroups.")
 
 
 def news_example(data_dir="example"):
@@ -76,11 +71,11 @@ def news_example(data_dir="example"):
     print("Generating documents from raw data. Equivalent CLI command:")
     print(
         Markdown(
-            f"```md\npostit generate {data_dir}/20news-18828/* --output {data_dir}/documents\n```"
+            f"```md\npostit generate {data_dir}/20_newsgroups/* --output {data_dir}/documents\n```"
         )
     )
     DocumentGenerator.generate(
-        folder_paths=[f"{data_dir}/20news-18828/*"],
+        folder_paths=[f"{data_dir}/news_raw/*"],
         output_path=f"{data_dir}/documents",
     )
     print("Continue? (return)")

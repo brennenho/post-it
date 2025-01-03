@@ -31,7 +31,7 @@ This example uses Post-It as a command line tool to tag and mix the `20 Newsgrou
 ### Download Raw Data
 Typically, downloading raw data isn't managed by Post-It. However, for this example you can download the `20 Newsgroups Dataset` by running `postit example --data [DIRECTORY]`. This will download the dataset to a local directory. For the rest of this example, we'll use `example` as our directory.
 
-You should now have the `20 Newsgroups Dataset` downloaded to `example/20news-18828`.
+You should now have the `20 Newsgroups Dataset` downloaded to `example/20_newsgroups`.
 
 ### Generate Documents
 The first step is to generate structured data from the raw files. Post-It uses two different terms to describe data:
@@ -47,9 +47,9 @@ The document generator can be invoked with `postit generate`. Run `postit genera
 
 For this example, run:
 ```bash
-postit generate example/20news-18828/* --output example/documents
+postit generate example/20_newsgroups/* --output example/documents
 ```
-- `example/20news-18828/*`: Path to raw data
+- `example/20_newsgroups/*`: Path to raw data
     - Use glob patterns. The glob pattern should expand out to a list of subdirectories that will be used for `File` naming.
 - `--output example/documents`: Specify the output path (optional)
 
