@@ -1,4 +1,4 @@
-## Generating Documents
+# Generating Documents
 
 Post-It does not handle raw data collection. In order to use this package, you must have your raw data files saved to one of the following locations:
 
@@ -17,10 +17,9 @@ A `File` is stored as a `JSONL` file. Each `Document` in the file is stored as a
 ```json
 {"id": 0, "source": "path/to/raw/file", "content": "raw text content"}
 {"id": 1, "source": "path/to/raw/file", "content": "raw text content"}
-...
 ```
 
-## CLI
+## Command Line
 
 The document generator can be invoked with `postit generate [PATH TO RAW DATA] [OPTIONS]`. Use the following options flags to control its behavior:
 
@@ -36,7 +35,7 @@ For example, let's assume your raw data is stored in the relative path `./raw_da
 postit generate raw_data/* --processes 2
 ```
 
-> [!WARNING]
+> [!CAUTION]
 > The path you specify is important! The trailing `*` glob pattern ensures your sub-folders are converted into individual `File`s.
 
 Your `.jsonl` files will be stored at `./documents` (or the `--output` path you specified). This folder will be used in subsequent steps.
@@ -64,3 +63,5 @@ def generate(
 | `output_path`     | Relative path to output directory (will be created if it doesn't exist). |
 | `keep_raw`        | Set flag to `False` to delete raw data. |
 | `num_processes`   | The # of parallel processes to run. |
+
+### See next: [Tagging](tagging.md)
