@@ -83,4 +83,4 @@ def tag(
 | `num_processes`       | The # of parallel processes to run. |
 | `**kwargs`            | Any number of optional parameters you would like passed directly to taggers (ex: a global bloom filter). |
 
-### See next: [Deduplication](deduplication.md)
+### See next: [Custom Taggers](custom-taggers.md)
