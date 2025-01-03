@@ -30,7 +30,4 @@ Without data tagging, creating a high-quality dataset involves directly filterin
 
 ## Contributing
 
-- Clone this repo
-- Install [Poetry](https://python-poetry.org/docs/)
-- Activate Poetry: `poetry shell`
-- Install dependencies: `poetry install`
+See [contributing](CONTRIBUTING.md).
