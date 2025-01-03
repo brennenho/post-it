@@ -16,7 +16,7 @@ Post-It supports the following tasks:
 
 ## Index
 To learn about each of these steps, please visit their corresponding pages.
-- Generating Documents (coming soon)
+- [Generating Documents](documents.md)
 - Tagging (coming soon)
 - Deduplication (coming soon)
 - Mixing (coming soon)

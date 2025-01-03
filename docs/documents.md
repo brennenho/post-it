@@ -10,7 +10,7 @@ The first step is to generate structured data from the raw files. Post-It uses t
 - `Document`: a single raw file
 - `File`: a collection of documents grouped together in a directory
 
-> [!INFO]
+> [!NOTE]
 > Think about `Document`s as source code and a `File` as a single GitHub repository if you were curating a code dataset.
 
 A `File` is stored as a `JSONL` file. Each `Document` in the file is stored as a single line in the following format:
