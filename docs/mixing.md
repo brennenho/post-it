@@ -16,51 +16,29 @@ There are a variety of options that can be tweaked during the mixing process to 
     - `value`: Value for comparison. Supported types: `float`, `str`, `list`
 
 
-These options are passed to the `Mixer` in a `.json`, `.yaml`, or `.yml` file:
+These options are passed to the `Mixer` in a `.json`, `.yaml`, or `.yml` file. Example `.yml` configuration:
 
-<details open>
-    <summary>YAML/YML</summary>
-    ```yml
-    # example.yml
-    name: example-mix
-    experiments:
-    - example_exp_1
-    - example_exp_2
-    input_paths:
-    - example/documents/*
-    conditions:
-    include:
-        - tag: example_tagger/example_tag_1
-        operator: '>'
-        value: 0
-    exclude:
-        - tag: example_tagger/example_tag_2
-        operator: '<'
-        value: 0
-    ```
-</details>
-<details>
-    <summary>JSON</summary>
-    ```json
-    {
-        "name": "example-mix",
-        "experiments": ["example_exp_1", "example_exp_2"],
-        "input_paths": ["example/documents/*"],
-        "conditions": {
-            "include": [{
-                "tag": "example_tagger/example_tag_1",
-                "operator": ">",
-                "value": 0
-            }],
-            "exclude": [{
-                "tag": "example_tagger/example_tag_2",
-                "operator": "<",
-                "value": 0
-            }]
-        }
-    }
-    ```
-</details>
+```yml
+# example.yml
+name: example-mix
+experiments:
+- example_exp_1
+- example_exp_2
+input_paths:
+- example/documents/*
+conditions:
+include:
+    - tag: example_tagger/example_tag_1
+    operator: '>'
+    value: 0
+exclude:
+    - tag: example_tagger/example_tag_2
+    operator: '<'
+    value: 0
+```
+
+> [!TIP]
+> Example configuration files: [example-config.yml](example-config.yml) and [example-config.json](example-config.json)
 
 ## Command Line
 
