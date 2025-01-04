@@ -1,0 +1,15 @@
+name: example-mix
+experiments:
+- example_exp_1
+- example_exp_2
+input_paths:
+- example/documents/*
+conditions:
+include:
+    - tag: example_tagger/example_tag_1
+    operator: '>'
+    value: 0
+exclude:
+    - tag: example_tagger/example_tag_2
+    operator: '<'
+    value: 0

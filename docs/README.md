@@ -16,15 +16,16 @@ Post-It supports the following tasks:
 
 ## Index
 To learn about each of these steps, please visit their corresponding pages.
-- Generating Documents (coming soon)
-- Tagging (coming soon)
-- Deduplication (coming soon)
-- Mixing (coming soon)
+- [Generating Documents](documents.md)
+- [Tagging](tagging.md)
+- [Custom Taggers](custom-taggers.md)
+- [Deduplication](deduplication.md)
+- [Mixing](mixing.md)
 
 ## Example: 20 Newsgroups
 This example uses Post-It as a command line tool to tag and mix the `20 Newsgroups Dataset`. The raw data and all files generated will take `~ 200 MB` of storage.
 
-> [!NOTE]
+> [!TIP]
 > Walkthrough this entire example automatically by running `postit example`.
 > See [examples/news.py](../postit/examples/news.py) for the corresponding code and an example of how to utilize Post-It as a library.
 
@@ -62,7 +63,7 @@ Each `Tag` has the following values:
 - `end`: End of the tag
 - `value:` Value of the tag. Supported types: `float`, `str`.
 
-For `File` taggers, `start` and `end` correspond to `Document` indexes. For `Document` taggers, they correspond to character ranges within the `content` string of the `Document`.
+For `File` taggers, `start` and `end` correspond to `Document` indexes. For `Document` taggers, they correspond to character ranges from the start of `Document`.
 
 Taggers can be invoked with `postit tag`. Run `postit tag --help` to see available options.
 
@@ -70,11 +71,12 @@ For this example, we'll use the build-in `doc_length` and `paragraph_length` tag
 ```bash
 postit tag length "example/documents/*" --tagger doc_length --tagger paragraph_length
 ```
+- `length`: Name of the experiment
 - `"example/documents/*"`: Glob path to the structured data
 - `--tagger doc_length`: Invoke the `doc_length` tagger
 - `--tagger paragraph_length`: Invoke the `paragraph_length` tagger
 
-> [!WARNING]
+> [!CATION]
 > Pay attention to the quotation marks around the glob path. Using quotes prevents the shell from expanding the glob path automatically, since Post-It handles this internally. Without the quotation marks, Post-It will still work, but will spawn a bunch of separate processes for each subfolder.
 
 ### Deduplication
@@ -120,7 +122,7 @@ conditions:
       value: 0
 ```
 - `name`: Name of the mix
-- `experiments`: Previous tagging/deduplication experiements to import
+- `experiments`: Previous tagging/deduplication experiments to import
 - `conditions`: Tags to include or exclude while mixing
     - `tag`: Name of the tag. Format: `tagger_name/tag_name`.
     - `operator`: Comparison operator. Valid operators: `in`, `not in`, `==`, `!=`, `>`, `<`, `>=`, `<=`
