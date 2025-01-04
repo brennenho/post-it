@@ -14,7 +14,7 @@ Use the following flags to control its behavior:
 | `--paragraphs`    | Toggle to deduplicate at the paragraph level. |
 | `--experiment`    | Name of the experiment. [default: dedupe] |
 | `--bloom-size`    | Size of the bloom filter. [default: 1000000] |
-| `--bloom-file`    | Path to a bloom filter .pkl file to import. (ignore to create a new file) |
+| `--bloom-file`    | Path to a bloom filter .pkl file to import (or create if it doesn't exist). |
 | `--processes`     | Number of processes to use for parallel processing. [default: 1] |
 | `--help`          | Show available options. |
 
@@ -59,7 +59,7 @@ def dedupe(
 | `dedupe_docs`         | Toggle to deduplicate at the document level. |
 | `dedupe_paragraphs`   | Toggle to deduplicate at the paragraph level. |
 | `bloom_size`          | Size of the bloom filter (if creating a filter). |
-| `bloom_file`          | Path to a bloom filter .pkl file to import (leave blank to create a new file). |
+| `bloom_file`          | Path to a bloom filter .pkl file to import (or create if it doesn't exist). |
 | `num_processes`       | The # of parallel processes to run. |
 | `**kwargs`            | Any number of optional parameters you would like passed directly to taggers. |
 
