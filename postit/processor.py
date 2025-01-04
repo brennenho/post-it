@@ -170,7 +170,7 @@ class TaggerProcessor(BaseProcessor):
             )
 
         for file_tagger in self.file_taggers:
-            tagger_result = file_tagger.run_tagger(file)
+            tagger_result = file_tagger.run_tagger(file, **self.kwargs)
             file.tags.update(tagger_result)
             self.progress.update(self.task, advance=1)
 
