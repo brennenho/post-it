@@ -75,7 +75,7 @@ def news_example(data_dir="example"):
         )
     )
     DocumentGenerator.generate(
-        folder_paths=[f"{data_dir}/news_raw/*"],
+        folder_paths=[f"{data_dir}/20_newsgroups/*"],
         output_path=f"{data_dir}/documents",
     )
     print("Continue? (return)")
