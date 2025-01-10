@@ -1,5 +1,5 @@
 
-![Banner](./docs/banner.png)
+![Banner](https://raw.githubusercontent.com/brennenho/post-it/refs/heads/main/docs/banner.png)
 
 # Post-It
 [![license](https://img.shields.io/github/license/brennenho/post-it?style=flat-square)](https://github.com/brennenho/post-it/blob/main/LICENSE)
@@ -33,4 +33,4 @@ Without data tagging, creating a high-quality dataset involves directly filterin
 
 ## Contributing
 
-See [contributing](CONTRIBUTING.md).
+See [contributing](https://github.com/brennenho/post-it/blob/main/CONTRIBUTING.md).
