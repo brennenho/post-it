@@ -1,3 +1,6 @@
+
+![Banner](./docs/banner.png)
+
 # Post-It
 [![license](https://img.shields.io/github/license/brennenho/post-it?style=flat-square)](https://github.com/brennenho/post-it/blob/main/LICENSE)
 [![PyPI](https://img.shields.io/pypi/v/postit.svg?style=flat-square&label=PyPI)](https://pypi.org/project/postit/)
