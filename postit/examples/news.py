@@ -16,7 +16,7 @@ from urllib.request import urlretrieve
 
 
 def download_20newsgroups_raw(progress: Progress, task, data_dir):
-    url = "https://github.com/brennenho/post-it/raw/refs/heads/main/docs/20_newsgroups.tar.gz"
+    url = "https://github.com/brennenho/post-it/raw/refs/heads/main/docs/assets/20_newsgroups.tar.gz"
     tar_filename = os.path.join(data_dir, "20_newsgroups.tar.gz")
 
     os.makedirs(data_dir, exist_ok=True)

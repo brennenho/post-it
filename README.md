@@ -1,5 +1,5 @@
 
-![Banner](https://raw.githubusercontent.com/brennenho/post-it/refs/heads/main/docs/banner.png)
+![Banner](https://raw.githubusercontent.com/brennenho/post-it/refs/heads/main/docs/assets/banner.png)
 
 # Post-It
 [![license](https://img.shields.io/github/license/brennenho/post-it?style=flat-square)](https://github.com/brennenho/post-it/blob/main/LICENSE)
@@ -18,6 +18,8 @@ pip install postit
 To learn more about using Post-It, please visit the [documentation](https://github.com/brennenho/post-it/tree/main/docs).
 
 ## Why Data Tagging?
+
+![Diagram](https://raw.githubusercontent.com/brennenho/post-it/refs/heads/main/docs/assets/diagram.png)
 
 Datasets form the backbone of modern machine learning. A high-quality dataset is vital to successfully train an AI model. Data tagging is the process of labeling raw data based on the content of the data and related metadata.
 

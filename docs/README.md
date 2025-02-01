@@ -6,6 +6,7 @@ pip install postit
 ```
 
 ## Getting Started
+
 Post-It can be used directly as a command line tool or imported as a Python library. To see available commands, run `postit --help`.
 
 Post-It supports the following tasks:
@@ -13,6 +14,8 @@ Post-It supports the following tasks:
 2. Processing and applying tags to the structured data
 3. Deduplicating the structured data
 4. Combining the structured data and tags to create a final corpus
+
+![Diagram](assets/diagram.png)
 
 ## Index
 To learn about each of these steps, please visit their corresponding pages.
