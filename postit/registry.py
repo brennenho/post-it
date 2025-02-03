@@ -45,6 +45,8 @@ class TaggerRegistry:
 
     @classmethod
     def get(cls, name):
+        cls()  # Ensure the registry is initialized
+
         tagger = cls._instance._registry.get(name)
         if not tagger:
             raise ValueError(
@@ -54,10 +56,14 @@ class TaggerRegistry:
 
     @classmethod
     def all(cls):
+        cls()  # Ensure the registry is initialized
+
         return cls._instance._registry
 
     @classmethod
     def names(cls):
+        cls()  # Ensure the registry is initialized
+
         return list(cls._instance._registry.keys())
 
     @staticmethod
