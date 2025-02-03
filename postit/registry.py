@@ -105,4 +105,7 @@ def tagger(cls):
 
 
 # Import default taggers
-TaggerRegistry.import_modules(["postit/taggers/**/*.py"])
+current_dir = os.path.dirname(__file__)
+taggers_dir = os.path.join(current_dir, "taggers")
+pattern = os.path.join(taggers_dir, "**", "*.py")
+TaggerRegistry.import_modules([pattern])
