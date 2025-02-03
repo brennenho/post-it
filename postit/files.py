@@ -77,7 +77,8 @@ class GSFileClient(FileClient):
     A file client implementation for Google Cloud Storage (GCS).
     """
 
-    gcs = gcsfs.GCSFileSystem()
+    def __init__(self):
+        self.gcs = gcsfs.GCSFileSystem()
 
     def open(self, path: str, mode: str) -> IO:
         return self.gcs.open(path, mode)

@@ -80,10 +80,14 @@ def test_gs_remove(mock_rm):
     mock_rm.assert_called_once_with("gs://bucket/file", recursive=True)
 
 
-@mock.patch.object(GSFileClient, "gcs")
-def test_glob_gs(mock_gcs):
-    mock_gcs.glob.return_value = ["bucket/file1", "bucket/file2"]
+@mock.patch("gcsfs.GCSFileSystem")
+def test_glob_gs(mock_gcs_constructor):
+    mock_gcs_instance = mock.MagicMock()
+    mock_gcs_instance.glob.return_value = ["bucket/file1", "bucket/file2"]
+    mock_gcs_constructor.return_value = mock_gcs_instance
+
     client = GSFileClient()
     result = client.glob("gs://bucket/*")
-    mock_gcs.glob.assert_called_once_with("gs://bucket/*")
+
+    mock_gcs_instance.glob.assert_called_once_with("gs://bucket/*")
     assert result == ["gs://bucket/file1", "gs://bucket/file2"]
